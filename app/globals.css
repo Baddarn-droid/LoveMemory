@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+
+:root {
+  --charcoal: #0C0C0E;
+  --offwhite: #F4F4F5;
+  --cream: #E8E6E3;
+  --violet: #6B5BD4;
+  --violet-soft: rgba(107, 91, 212, 0.12);
+  --font-satoshi: 'Satoshi', system-ui, sans-serif;
+  --gradient-warm: linear-gradient(160deg, rgba(107, 91, 212, 0.06) 0%, rgba(180, 160, 220, 0.04) 40%, transparent 70%);
+  --gradient-glow: radial-gradient(ellipse 70% 45% at 50% 0%, rgba(107, 91, 212, 0.12) 0%, transparent 55%);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--charcoal);
+  color: var(--offwhite);
+  font-feature-settings: 'ss01', 'ss02', 'cv01', 'cv02';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .gpu {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+}
+
+::selection {
+  background: rgba(107, 91, 212, 0.25);
+  color: var(--offwhite);
+}
+
+/* Subtle focus for accessibility */
+:focus-visible {
+  outline: 1px solid var(--violet);
+  outline-offset: 2px;
+}

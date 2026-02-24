@@ -1,0 +1,35 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "description": "Next.js 15 website",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "generate-pet-examples": "npx tsx scripts/generate-pet-examples.ts"
+  },
+  "dependencies": {
+    "@stripe/stripe-js": "^8.7.0",
+    "@tailwindcss/postcss": "^4.1.18",
+    "autoprefixer": "^10.4.23",
+    "framer-motion": "^12.29.2",
+    "next": "^15.0.0",
+    "openai": "^4.77.0",
+    "postcss": "^8.5.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.33.5",
+    "stripe": "^20.3.0",
+    "tailwindcss": "^4.1.18"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^15.0.0",
+    "typescript": "^5.3.3"
+  }
+}
