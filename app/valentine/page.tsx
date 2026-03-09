@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function ValentinePage() {
-  redirect('/couples')
+  redirect('/family-couple')
 }

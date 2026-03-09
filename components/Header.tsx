@@ -8,11 +8,8 @@ import { useState } from 'react'
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/pets', label: 'Pets' },
-  { href: '/family', label: 'Family' },
-  { href: '/kids', label: 'Kids' },
-  { href: '/couples', label: 'Couples' },
-  { href: '/self', label: 'Self' },
-  { href: '/pricing', label: 'Pricing' },
+  { href: '/family-couple', label: 'Family / Couple' },
+  { href: '/contact', label: 'Contact' },
 ]
 
 function MenuIcon({ open }: { open: boolean }) {
@@ -25,13 +22,13 @@ function MenuIcon({ open }: { open: boolean }) {
   )
 }
 
-export function Header({ onToggleSidebar, sidebarOpen }: { onToggleSidebar: () => void; sidebarOpen: boolean }) {
+export function Header() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const pathname = usePathname()
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
-    if (href === '/pricing') return pathname === '/pricing'
+    if (href === '/contact') return pathname === '/contact'
     return pathname === href || pathname.startsWith(href + '/')
   }
 
@@ -55,7 +52,7 @@ export function Header({ onToggleSidebar, sidebarOpen }: { onToggleSidebar: () =
                 href={link.href}
                 className={`relative rounded-md px-3.5 py-2.5 text-[13px] tracking-[0.02em] transition-colors ${
                   active ? 'text-amber-400' : 'text-offwhite/75 hover:bg-white/[0.04] hover:text-offwhite'
-                } ${active && link.href !== '/' && link.href !== '/pricing' ? 'border-b-2 border-amber-500' : ''}`}
+                } ${active && link.href !== '/' && link.href !== '/contact' ? 'border-b-2 border-amber-500' : ''}`}
               >
                 {link.label}
               </Link>
@@ -63,24 +60,14 @@ export function Header({ onToggleSidebar, sidebarOpen }: { onToggleSidebar: () =
           })}
         </nav>
 
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            className="hidden rounded-md p-2.5 text-offwhite/70 transition-colors hover:bg-white/[0.04] hover:text-offwhite md:flex"
-            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
-          >
-            <MenuIcon open={sidebarOpen} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileNavOpen((o) => !o)}
-            className="flex h-10 w-10 items-center justify-center rounded-md md:hidden"
-            aria-label="Menu"
-          >
-            <MenuIcon open={mobileNavOpen} />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setMobileNavOpen((o) => !o)}
+          className="flex h-10 w-10 items-center justify-center rounded-md md:hidden"
+          aria-label="Menu"
+        >
+          <MenuIcon open={mobileNavOpen} />
+        </button>
       </div>
 
       <AnimatePresence>
@@ -104,7 +91,7 @@ export function Header({ onToggleSidebar, sidebarOpen }: { onToggleSidebar: () =
                   }`}
                 >
                   {link.label}
-                  {active && link.href !== '/' && link.href !== '/pricing' && (
+                  {active && link.href !== '/' && link.href !== '/contact' && (
                     <span className="h-2 w-2 rounded-full bg-amber-500" />
                   )}
                 </Link>

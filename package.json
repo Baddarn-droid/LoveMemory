@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate-pet-examples": "npx tsx scripts/generate-pet-examples.ts"
+    "generate-pet-examples": "npx tsx scripts/generate-pet-examples.ts",
+    "generate-family-examples": "npx tsx scripts/generate-family-examples.ts"
   },
   "dependencies": {
     "@stripe/stripe-js": "^8.7.0",

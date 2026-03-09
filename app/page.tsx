@@ -2,19 +2,18 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
+import { useMemo } from 'react'
+
 
 const trustBadges = [
   'Secure checkout',
-  'Satisfaction guaranteed',
   'Free shipping on prints',
 ]
 
 const categories = [
-  { id: 'pets', label: 'Pets', href: '/pets', emoji: '🐾' },
-  { id: 'family', label: 'Family', href: '/family', emoji: '👨‍👩‍👧‍👦' },
-  { id: 'kids', label: 'Kids', href: '/kids', emoji: '👧' },
-  { id: 'couples', label: 'Couples', href: '/couples', emoji: '💑' },
-  { id: 'self', label: 'Self', href: '/self', emoji: '✨' },
+  { id: 'pets', label: 'Pet Portraits', href: '/pets', emoji: '🐾' },
+  { id: 'family', label: 'Family / Couple', href: '/family-couple', emoji: '👨‍👩‍👧‍👦' },
 ]
 
 const steps = [
@@ -23,11 +22,46 @@ const steps = [
   { num: 3, title: 'Get your portrait', desc: 'Download, print, or framed — from £29.90' },
 ]
 
+/** One cat, one family, one dachshund — order shuffled on load */
+const HOMEPAGE_ONE_EACH = [
+  { src: '/examples/pets-renaissance-1.png', href: '/pets/renaissance', label: 'Pet · Renaissance' },       // cat
+  { src: '/examples/family-baroque-royal-2.png', href: '/family-couple/baroque-royal', label: 'Family · Baroque' },
+  { src: '/examples/pets-classic-storybook-3.png', href: '/pets/classic-storybook', label: 'Pet · Storybook' }, // dachshund
+]
+
+function getHomepageSamples() {
+  return [...HOMEPAGE_ONE_EACH].sort(() => Math.random() - 0.5)
+}
+
+/** Example image paths for hero background montage (shaded) */
+const MONTAGE_IMAGES = [
+  '/examples/pets-renaissance-1.png', '/examples/pets-renaissance-2.png', '/examples/pets-baroque-royal-1.png',
+  '/examples/family-renaissance-1.png', '/examples/family-baroque-royal-2.png', '/examples/pets-rococo-elegance-2.png',
+  '/examples/pets-victorian-era-3.png', '/examples/family-victorian-era-1.png', '/examples/pets-classic-storybook-1.png',
+  '/examples/pets-classic-storybook-3.png', '/examples/family-dark-academia-scholar-2.png', '/examples/pets-high-fantasy-kingdom-2.png',
+]
+
 export default function Home() {
+  const homepageSamples = useMemo(() => getHomepageSamples(), [])
   return (
     <main className="relative flex min-h-screen flex-col bg-charcoal">
       {/* Hero */}
-      <section className="flex flex-1 flex-col items-center justify-center px-6 py-24 md:py-32">
+      <section className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6 py-24 md:py-32">
+        {/* Background montage — same width as header (LoveMemory ↔ Contact), shaded */}
+        <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
+          <div className="absolute inset-y-0 left-1/2 w-full max-w-6xl -translate-x-1/2 px-5 md:px-8">
+            <div className="absolute inset-0 grid grid-cols-4 grid-rows-3 gap-0.5 p-1 opacity-20 md:gap-1 md:p-2" style={{ gridTemplateRows: 'repeat(3, 1fr)' }}>
+              {MONTAGE_IMAGES.map((src, i) => (
+                <div key={`${src}-${i}`} className="relative min-h-0 overflow-hidden rounded-lg bg-charcoal/40">
+                  <Image src={src} alt="" fill className="object-contain" sizes="25vw" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="absolute inset-0 bg-charcoal/93" />
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center text-center">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -91,6 +125,39 @@ export default function Home() {
             </span>
           ))}
         </motion.div>
+        </div>
+      </section>
+
+      {/* Sample portraits from categories */}
+      <section className="border-t border-white/5 px-6 py-16 md:py-20">
+        <h2 className="mb-10 text-center text-sm font-medium uppercase tracking-widest text-white/40">
+          Portrait examples
+        </h2>
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-3">
+          {homepageSamples.map((item, i) => (
+            <motion.div
+              key={item.src}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.5 + i * 0.08 }}
+            >
+              <Link href={item.href} className="group block overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
+                <div className="relative aspect-[3/4] w-full">
+                  <Image
+                    src={item.src}
+                    alt={item.label}
+                    fill
+                    className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                  />
+                </div>
+                <p className="mt-3 text-center text-sm text-white/50 group-hover:text-amber-400/90 transition-colors">
+                  {item.label}
+                </p>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
       </section>
 
       {/* How it works */}
@@ -156,7 +223,7 @@ export default function Home() {
           className="mx-auto max-w-2xl text-center"
         >
           <p className="text-lg italic text-white/50 md:text-xl">
-            &ldquo;Absolutely love our family portrait. The kids are unrecognisable in the best way — so much character!&rdquo;
+            &ldquo;Absolutely love our family portrait. We all look amazing — so much character!&rdquo;
           </p>
           <p className="mt-4 text-sm text-white/40">— Sarah M., London</p>
         </motion.div>

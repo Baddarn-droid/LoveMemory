@@ -15,7 +15,7 @@ export function Footer() {
             LoveMemory
           </Link>
           <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-offwhite/50">
-            Custom portraits for those you love. Pets, families, kids & friends.
+            Custom portraits for those you love. Pets, families & couples.
           </p>
         </div>
         <div className="flex flex-col gap-10 md:flex-row md:gap-16">
@@ -26,9 +26,9 @@ export function Footer() {
             <ul className="flex flex-col gap-2">
               <li><Link href="/" className="text-[13px] text-offwhite/60 hover:text-violet">Home</Link></li>
               <li><Link href="/#create" className="text-[13px] text-offwhite/60 hover:text-violet">Create</Link></li>
-              <li><Link href="/family" className="text-[13px] text-offwhite/60 hover:text-violet">Family</Link></li>
-              <li><Link href="/kids" className="text-[13px] text-offwhite/60 hover:text-violet">Kids</Link></li>
-              <li><Link href="/pricing" className="text-[13px] text-offwhite/60 hover:text-violet">Pricing</Link></li>
+              <li><Link href="/pets" className="text-[13px] text-offwhite/60 hover:text-violet">Pet Portraits</Link></li>
+              <li><Link href="/family-couple" className="text-[13px] text-offwhite/60 hover:text-violet">Family / Couple</Link></li>
+              <li><Link href="/contact" className="text-[13px] text-offwhite/60 hover:text-violet">Contact</Link></li>
               <li><Link href="/auth" className="text-[13px] text-offwhite/60 hover:text-violet">Sign In</Link></li>
             </ul>
           </div>

@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'LoveMemory — Custom Portraits for Those You Love',
-  description: 'Turn your favourite moments into art. Custom portraits for pets, families, kids & friends. Upload, preview, order. Free shipping on prints.',
+  description: 'Turn your favourite moments into art. Custom portraits for pets, families & couples. Upload, preview, order. Free shipping on prints.',
 }
 
 export default function RootLayout({

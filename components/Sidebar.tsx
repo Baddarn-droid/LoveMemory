@@ -6,12 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/#create', label: 'Create' },
-  { href: '/', label: 'Pet Portraits' },
-  { href: '/family', label: 'Family Portraits' },
-  { href: '/kids', label: "Children's Portraits" },
-  { href: '/valentine', label: 'Couple Portraits' },
-  { href: '/self-portrait', label: 'Self-Portraits' },
-  { href: '/pricing', label: 'Pricing' },
+  { href: '/pets', label: 'Pet Portraits' },
+  { href: '/family-couple', label: 'Family / Couple Portraits' },
+  { href: '/contact', label: 'Contact' },
   { href: '/auth', label: 'Sign In' },
 ]
 

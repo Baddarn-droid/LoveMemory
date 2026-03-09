@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getCategoryBySlug, CATEGORY_SLUGS, getAllStyleIdsForCategory, STYLE_GROUPS } from '@/lib/styles'
-import { StyleSearch } from '@/components/StyleSearch'
 import { StyleGroupRollList } from '@/components/StyleGroupRollList'
 
 export function generateStaticParams() {
@@ -45,9 +44,6 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
           </p>
           <p className="mt-2 text-sm text-white/40">Pick a style below, upload your photo, and get your portrait in seconds.</p>
         </div>
-
-        {/* Style search */}
-        <StyleSearch categorySlug={category.slug} />
 
         {/* Style roll lists */}
         <div className="mb-8">

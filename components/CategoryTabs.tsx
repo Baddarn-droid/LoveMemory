@@ -5,10 +5,7 @@ import Link from 'next/link'
 
 const categories = [
   { id: 'pets', label: 'Pets', href: '/pets' },
-  { id: 'family', label: 'Family', href: '/family' },
-  { id: 'kids', label: 'Kids', href: '/kids' },
-  { id: 'couples', label: 'Couples', href: '/couples' },
-  { id: 'self', label: 'Self', href: '/self' },
+  { id: 'family', label: 'Family / Couple', href: '/family-couple' },
 ]
 
 export function CategoryTabs() {

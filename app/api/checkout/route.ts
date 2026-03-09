@@ -16,8 +16,8 @@ const PRODUCTS = {
     price: 2900,
   },
   family: {
-    name: 'Family Portrait',
-    description: 'AI-generated family portrait - humans & multi-image uploads',
+    name: 'Family / Couple Portrait',
+    description: 'AI-generated family or couple portrait - humans & multi-image uploads',
     price: 2900,
   },
 }
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
       ],
       mode: 'payment',
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/pricing`,
+      cancel_url: `${origin}/contact`,
       metadata: { productId },
     })
 

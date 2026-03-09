@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
 }
 
 function ExampleImage({ src, index, alt }: { src?: string; index: number; alt: string }) {
-  const aspectClass = 'aspect-[3/4]'
+  const aspectClass = 'aspect-square'
 
   if (src) {
     return (
@@ -42,7 +42,7 @@ function ExampleImage({ src, index, alt }: { src?: string; index: number; alt: s
           src={src}
           alt={alt}
           fill
-          className="object-contain"
+          className="object-cover object-center"
           sizes="(max-width: 768px) 50vw, 33vw"
         />
       </div>
