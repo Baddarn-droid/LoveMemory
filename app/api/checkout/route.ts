@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-01-28.clover',
-})
+function getStripe(): Stripe | null {
+  const key = process.env.STRIPE_SECRET_KEY?.trim()
+  if (!key) return null
+  return new Stripe(key, { apiVersion: '2026-01-28.clover' })
+}
 
 const PRICE_GBP = 2990 // £29.90 in pence
 
@@ -36,7 +38,8 @@ const PORTRAIT_OPTIONS = {
 } as const
 
 export async function POST(request: NextRequest) {
-  if (!process.env.STRIPE_SECRET_KEY) {
+  const stripe = getStripe()
+  if (!stripe) {
     return NextResponse.json(
       { error: 'Stripe is not configured.' },
       { status: 500 }
