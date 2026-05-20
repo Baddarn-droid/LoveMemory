@@ -46,7 +46,7 @@ export const RENAISSANCE_SUB_STYLES: RenaissanceSubStyle[] = [
     description: 'Timeless elegance with refined brushwork and classical composition.',
     promptModifier: `Florentine Renaissance style inspired by Botticelli and early Italian masters.
 CLOTHING & FABRICS: Wear flowing robes in deep burgundy/maroon (#6B2D2D), cream silk undershirts (#FFFFFF), and golden tan brocade accents (#C4A574). Delicate gold jewelry (#D4AF37). Dark charcoal background (#2C2C2C).
-STYLE: Refined delicate brushwork, soft sfumato, classical composition. Graceful poses, balanced proportions. Warm golden light. Timeless elegance.`,
+STYLE: Refined delicate brushwork on BACKGROUND AND GARMENTS ONLY (never faces). Classical composition. Warm golden light.`,
     colors: ['#6B2D2D', '#C4A574', '#FFFFFF', '#D4AF37', '#2C2C2C'],
   },
   {
@@ -55,7 +55,7 @@ STYLE: Refined delicate brushwork, soft sfumato, classical composition. Graceful
     description: 'Atmospheric Renaissance style with dramatic lighting and old master quality.',
     promptModifier: `Renaissance Sky / Caravaggio style with dramatic chiaroscuro.
 CLOTHING & FABRICS: Wear dark brown leather and earth-toned robes (#3D2C1E), silver-grey silk accents (#9E9E9E), white lace collars (#FFFFFF). Gold chain jewelry (#D4AF37). Deep navy blue atmospheric background (#1A2A3A).
-STYLE: Moody theatrical lighting, rich shadows, dramatic highlights. Old master quality. Atmospheric depth. Theatrical composition.`,
+STYLE: Moody theatrical lighting on background and garments only (never faces). Old master quality background.`,
     colors: ['#3D2C1E', '#9E9E9E', '#FFFFFF', '#D4AF37', '#1A2A3A'],
   },
   {
@@ -64,7 +64,7 @@ STYLE: Moody theatrical lighting, rich shadows, dramatic highlights. Old master 
     description: 'Classic royal portrait with rich velvet drapes and golden baroque frames.',
     promptModifier: `Baroque royal portrait style, 17th-century European court.
 CLOTHING & FABRICS: Wear vibrant crimson and deep red velvet (#8B0000), golden brocade embroidery (#D4AF37), silver-trimmed accessories (#C0C0C0), white ruffs (#FFFFFF). Olive green velvet accents (#6B8E23). Rich velvet drapes in background.
-STYLE: Opulent, luxurious. Golden baroque ornamental details. Jewel tones. Dramatic court lighting.`,
+STYLE: Opulent luxurious garments and background only (never faces). Jewel tones. Dramatic court lighting.`,
     colors: ['#8B0000', '#D4AF37', '#C0C0C0', '#FFFFFF', '#6B8E23'],
   },
   {
@@ -73,16 +73,24 @@ STYLE: Opulent, luxurious. Golden baroque ornamental details. Jewel tones. Drama
     description: 'Vibrant painterly style with bold brushstrokes and rich color harmony.',
     promptModifier: `Rococo style, 18th-century French court aesthetic.
 CLOTHING & FABRICS: Wear pale mint green silk (#4A7C59), light pink satin and rose accents (#E8A0A0), white lace and ribbons (#FFFFFF), cream and tan brocade (#C4A574). Golden decorative elements (#D4AF37).
-STYLE: Vibrant painterly look, bold visible brushstrokes. Soft pastels, rich color harmony. Elegant, light, decorative. Playful ornate details.`,
+STYLE: Vibrant painterly look on BACKGROUND AND GARMENTS ONLY (never faces). Soft pastels, rich color harmony.`,
     colors: ['#4A7C59', '#E8A0A0', '#FFFFFF', '#C4A574', '#D4AF37'],
   },
 ]
 
+/** Virtual try-on edit lock — must be first in every prompt (OpenAI cookbook pattern) */
+export const FACE_EDIT_LOCK = `EDIT MODE — PRESERVE FACE EXACTLY (highest priority, overrides all style instructions):
+Edit this photo like virtual try-on: change ONLY clothing and background to match the selected style.
+DO NOT change: face, facial features, skin tone, skin texture, pores, freckles, moles, wrinkles, scars, expression, eye colour/shape, nose, mouth, lips, eyebrows, hair colour, hair length, hair style, body shape, or pose.
+The face must remain a sharp, raw, unfiltered photograph — identical to the upload. No beauty filter, no skin smoothing, no airbrush, no soft focus, no glamour retouch, no makeup enhancement, no painterly or illustrated effect on skin.
+If the face looks retouched, filtered, softened, or "improved" in any way, the edit has FAILED.`
+
 /** Absolute no-filter rule — both pets and people, every style */
 export const NO_FILTER_FACE = `ZERO FILTERS ON FACES (mandatory — all categories):
+- Copy the face from the source photo unchanged — treat it as a locked layer that must NOT be repainted
 - Faces must look like unedited photographs: raw, sharp, natural — NOT retouched or beautified
 - Preserve natural skin/fur texture: pores, fine lines, natural shadows, real imperfections, exact tone from the upload
-- FORBIDDEN on any face: beauty filter, skin smoothing, airbrush, soft glow, porcelain skin, glamour retouch, makeup enhancement, Instagram/Snapchat filter, painterly or soft-focus skin`
+- FORBIDDEN on any face: beauty filter, skin smoothing, airbrush, soft glow, porcelain skin, glamour retouch, makeup enhancement, Instagram/Snapchat filter, painterly or soft-focus skin, AI face enhancement`
 
 /** Correct period clothing layering — prevents tie/cravat outside shirt */
 export const PERIOD_CLOTHING_FIT = `CLOTHING FIT & LAYERING (mandatory for people):
@@ -187,7 +195,7 @@ export const FULL_FRAME_INSTRUCTION = `CRITICAL - FRAMING AND COMPOSITION:
 - Keep the same framing as the original photo: if the original shows head and shoulders, show full head and shoulders; if it shows full body or multiple people, show all of them fully in frame.
 - Ensure every person or pet in the photo is fully visible with no body parts cut off at the edges.`
 
-const RENAISSANCE_BASE = `Transform this photo into a Renaissance noble portrait in the style of 15th-16th century European masters.
+const RENAISSANCE_BASE = `Edit this photo: replace clothing and background with Renaissance noble styling (15th-16th century European). Do NOT alter the face, skin, or hair.
 
 ${FACE_PRESERVATION}
 
@@ -350,53 +358,53 @@ export const STYLE_GROUPS: StyleGroup[] = [
     title: 'Classic Art & Historical',
     styles: [
       { id: 'renaissance', title: 'Renaissance Oil Painting', description: '15th–16th century European masters.', searchKeywords: ['renaissance', 'oil', 'classical', 'old master'], subStyles: RENAISSANCE_SUB_STYLES, promptText: RENAISSANCE_BASE },
-      { id: 'baroque-royal', title: 'Baroque Royal Portrait', description: 'Rich velvet drapes, golden baroque frames.', searchKeywords: ['baroque', 'royal', 'velvet', 'golden'], promptText: eraStylePrompt('Baroque royal portrait (17th-century European court)', 'Transform into Baroque royal portrait. Rich crimson or deep velvet, golden brocade trim, white lace collars or modest ruffs appropriate to the 1600s. Opulent, dramatic court lighting. Dark or draped background. Replace clothing and background only.', ['Victorian 19th-century dress', 'Renaissance 15th–16th century Florentine style', 'Rococo pastels', 'modern clothing']) },
-      { id: 'rococo-elegance', title: 'Rococo Elegance', description: 'Vibrant painterly style with bold brushstrokes.', searchKeywords: ['rococo', 'elegance', 'pastels', 'french court'], promptText: eraStylePrompt('Rococo portrait (18th-century French court)', 'Transform into Rococo portrait. Pale silk, pink satin, cream brocade, soft pastels, playful ornate details. Light, airy, decorative 18th-century French court aesthetic. Replace clothing and background only.', ['Victorian dark formal wear', 'Renaissance doublets and Tudor ruffs', 'Baroque heavy velvet', 'modern clothing']) },
-      { id: 'victorian-era', title: 'Victorian Era Portrait', description: 'Formal Victorian period style.', searchKeywords: ['victorian', 'era', 'formal', '19th century'], promptText: eraStylePrompt('Victorian era portrait (19th century, c. 1837–1901)', `Transform into a formal Victorian-era oil portrait or cabinet photograph aesthetic.
+      { id: 'baroque-royal', title: 'Baroque Royal Portrait', description: 'Rich velvet drapes, golden baroque frames.', searchKeywords: ['baroque', 'royal', 'velvet', 'golden'], promptText: eraStylePrompt('Baroque royal portrait (17th-century European court)', 'Edit photo: style clothing and background as Baroque royal portrait. Rich crimson or deep velvet, golden brocade trim, white lace collars or modest ruffs appropriate to the 1600s. Opulent, dramatic court lighting. Dark or draped background. Replace clothing and background only.', ['Victorian 19th-century dress', 'Renaissance 15th–16th century Florentine style', 'Rococo pastels', 'modern clothing']) },
+      { id: 'rococo-elegance', title: 'Rococo Elegance', description: 'Vibrant painterly style with bold brushstrokes.', searchKeywords: ['rococo', 'elegance', 'pastels', 'french court'], promptText: eraStylePrompt('Rococo portrait (18th-century French court)', 'Edit photo: style clothing and background as Rococo portrait. Pale silk, pink satin, cream brocade, soft pastels, playful ornate details. Light, airy, decorative 18th-century French court aesthetic. Replace clothing and background only.', ['Victorian dark formal wear', 'Renaissance doublets and Tudor ruffs', 'Baroque heavy velvet', 'modern clothing']) },
+      { id: 'victorian-era', title: 'Victorian Era Portrait', description: 'Formal Victorian period style.', searchKeywords: ['victorian', 'era', 'formal', '19th century'], promptText: eraStylePrompt('Victorian era portrait (19th century, c. 1837–1901)', `Edit photo: style clothing and background as a formal Victorian-era cabinet photograph aesthetic (NOT an oil painting of the face).
 CLOTHING: 19th-century formal dress — dark wool, velvet, or silk; high necklines; frock coats for men; modest bustled or period silhouettes for women; muted palette (black, navy, deep burgundy, brown, charcoal). Simple lace at collar if any — NOT large Elizabethan ruffs. Men's cravats or neckties worn INSIDE the shirt collar, knotted at the neck — never floating outside the collar.
 BACKGROUND: Moody studio backdrop, dark interior, or subtle Victorian parlour — not golden Renaissance halos or Baroque theatre drapes.
 MOOD: Restrained, dignified, photographic or academic oil portrait of the Victorian period.
 Replace clothing and background only; keep faces photographic.`, ['Renaissance 15th–16th century dress', 'Elizabethan ruffs and doublets', 'gold brocade Renaissance sleeves', 'feathered Tudor caps', 'Baroque opulent crimson court', 'Rococo pastels']) },
-      { id: 'edwardian', title: 'Edwardian Aristocracy', description: 'Elegant Edwardian country estate.', searchKeywords: ['edwardian', 'aristocracy', 'estate', 'elegant'], promptText: eraStylePrompt('Edwardian aristocracy portrait (early 20th century)', 'Transform into Edwardian aristocracy portrait. Elegant country-estate attire: tailored suits, long Edwardian dresses, soft natural light, refined early-1900s British gentry aesthetic. Replace clothing and background only.', ['Victorian heavy dark formality only', 'Renaissance or Elizabethan dress', 'modern clothing']) },
-      { id: 'dutch-golden', title: 'Dutch Golden Age', description: 'Rembrandt-inspired chiaroscuro.', searchKeywords: ['dutch', 'golden age', 'rembrandt', 'chiaroscuro'], promptText: eraStylePrompt('Dutch Golden Age portrait (Rembrandt era)', 'Transform into Dutch Golden Age portrait. Rembrandt-inspired chiaroscuro, warm browns, black garments with white collars, dramatic single light source. 17th-century Dutch master oil painting. Replace clothing and background only.', ['Victorian 19th-century fashion', 'Renaissance Florentine colours', 'Rococo pastels']) },
-      { id: 'pre-raphaelite', title: 'Pre-Raphaelite Style', description: 'Vivid, British Pre-Raphaelite.', searchKeywords: ['pre-raphaelite', 'medieval', 'vivid', 'british'], promptText: eraStylePrompt('Pre-Raphaelite portrait (British Victorian art movement)', 'Transform into Pre-Raphaelite portrait. Vivid jewel tones, medieval-inspired flowing garments, romantic British 19th-century Pre-Raphaelite Brotherhood aesthetic — NOT generic Renaissance court dress. Nature or tapestry backgrounds. Replace clothing and background only.', ['Generic Renaissance court portrait', 'Baroque theatre', 'modern clothing']) },
+      { id: 'edwardian', title: 'Edwardian Aristocracy', description: 'Elegant Edwardian country estate.', searchKeywords: ['edwardian', 'aristocracy', 'estate', 'elegant'], promptText: eraStylePrompt('Edwardian aristocracy portrait (early 20th century)', 'Edit photo: style clothing and background as Edwardian aristocracy portrait. Elegant country-estate attire: tailored suits, long Edwardian dresses, soft natural light, refined early-1900s British gentry aesthetic. Replace clothing and background only.', ['Victorian heavy dark formality only', 'Renaissance or Elizabethan dress', 'modern clothing']) },
+      { id: 'dutch-golden', title: 'Dutch Golden Age', description: 'Rembrandt-inspired chiaroscuro.', searchKeywords: ['dutch', 'golden age', 'rembrandt', 'chiaroscuro'], promptText: eraStylePrompt('Dutch Golden Age portrait (Rembrandt era)', 'Edit photo: style clothing and background as Dutch Golden Age portrait. Rembrandt-inspired chiaroscuro on background and garments only, warm browns, black garments with white collars, dramatic single light source. Replace clothing and background only.', ['Victorian 19th-century fashion', 'Renaissance Florentine colours', 'Rococo pastels']) },
+      { id: 'pre-raphaelite', title: 'Pre-Raphaelite Style', description: 'Vivid, British Pre-Raphaelite.', searchKeywords: ['pre-raphaelite', 'medieval', 'vivid', 'british'], promptText: eraStylePrompt('Pre-Raphaelite portrait (British Victorian art movement)', 'Edit photo: style clothing and background as Pre-Raphaelite portrait. Vivid jewel tones, medieval-inspired flowing garments, romantic British 19th-century Pre-Raphaelite Brotherhood aesthetic — NOT generic Renaissance court dress. Nature or tapestry backgrounds. Replace clothing and background only.', ['Generic Renaissance court portrait', 'Baroque theatre', 'modern clothing']) },
     ],
   },
   {
     id: 'royal-elite',
     title: 'Royal & British Heritage',
     styles: [
-      { id: 'british-aristocracy', title: 'British Aristocracy', description: 'Regal British noble style.', searchKeywords: ['british', 'aristocracy', 'noble', 'regal'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into British aristocracy portrait. Regal noble attire. Velvet, fur trim, pearls. Country estate background. Replace clothing and background only.') },
-      { id: 'royal-court', title: 'Royal Court Portrait', description: 'Grand royal court style.', searchKeywords: ['royal', 'court', 'crown', 'throne'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into royal court portrait. Crown or tiara. Formal court attire. Throne room or palace. Replace clothing and background only.') },
-      { id: 'country-manor', title: 'Country Manor Painting', description: 'Estate manor portrait style.', searchKeywords: ['country', 'manor', 'estate', 'landed'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into country manor portrait. Landed gentry style. Refined country attire. Manor house background. Replace clothing and background only.') },
-      { id: 'heritage-museum', title: 'Heritage Museum Display', description: 'Museum-quality heritage portrait.', searchKeywords: ['heritage', 'museum', 'display', 'gallery'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into heritage museum portrait. Gallery-quality. Formal historical attire. Museum display aesthetic. Replace clothing and background only.') },
+      { id: 'british-aristocracy', title: 'British Aristocracy', description: 'Regal British noble style.', searchKeywords: ['british', 'aristocracy', 'noble', 'regal'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as British aristocracy portrait. Regal noble attire. Velvet, fur trim, pearls. Country estate background. Replace clothing and background only.') },
+      { id: 'royal-court', title: 'Royal Court Portrait', description: 'Grand royal court style.', searchKeywords: ['royal', 'court', 'crown', 'throne'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as royal court portrait. Crown or tiara. Formal court attire. Throne room or palace. Replace clothing and background only.') },
+      { id: 'country-manor', title: 'Country Manor Painting', description: 'Estate manor portrait style.', searchKeywords: ['country', 'manor', 'estate', 'landed'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as country manor portrait. Landed gentry style. Refined country attire. Manor house background. Replace clothing and background only.') },
+      { id: 'heritage-museum', title: 'Heritage Museum Display', description: 'Museum-quality heritage portrait.', searchKeywords: ['heritage', 'museum', 'display', 'gallery'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as heritage museum portrait. Gallery-quality. Formal historical attire. Museum display aesthetic. Replace clothing and background only.') },
     ],
   },
   {
     id: 'dark-academia',
     title: 'Dark Academia & Intellectual',
     styles: [
-      { id: 'dark-academia-scholar', title: 'Dark Academia Scholar', description: 'Moody scholarly portrait.', searchKeywords: ['dark academia', 'scholar', 'moody', 'intellectual'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into Dark Academia scholar portrait. Moody, scholarly. Books, tweed, warm lamplight. Library or study. Replace clothing and background only.') },
-      { id: 'oxford-don', title: 'Oxford Don Aesthetic', description: 'Academic Oxford don style.', searchKeywords: ['oxford', 'don', 'academic', 'british'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into Oxford don portrait. Academic, distinguished. Tweed, spectacles. University library. Replace clothing and background only.') },
+      { id: 'dark-academia-scholar', title: 'Dark Academia Scholar', description: 'Moody scholarly portrait.', searchKeywords: ['dark academia', 'scholar', 'moody', 'intellectual'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as Dark Academia scholar portrait. Moody, scholarly. Books, tweed, warm lamplight. Library or study. Replace clothing and background only.') },
+      { id: 'oxford-don', title: 'Oxford Don Aesthetic', description: 'Academic Oxford don style.', searchKeywords: ['oxford', 'don', 'academic', 'british'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as Oxford don portrait. Academic, distinguished. Tweed, spectacles. University library. Replace clothing and background only.') },
     ],
   },
   {
     id: 'storybook-whimsical',
     title: 'Storybook & Whimsical',
     styles: [
-      { id: 'classic-storybook', title: 'Classic Storybook Illustration', description: 'Beloved children\'s book style.', searchKeywords: ['storybook', 'illustration', 'children', 'classic'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into classic storybook illustration. Whimsical, illustrated. Soft lines, gentle colors. Children\'s book aesthetic. Replace clothing and background only.') },
-      { id: 'fairytale-art', title: "Children's Fairytale Art", description: 'Magical fairytale illustration.', searchKeywords: ['fairytale', 'children', 'magical', 'enchanted'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into children\'s fairytale art. Magical, enchanting. Soft colors, dreamy. Storybook aesthetic. Replace clothing and background only.') },
-      { id: 'hand-painted-watercolour', title: 'Hand-Painted Watercolour', description: 'Delicate watercolour washes.', searchKeywords: ['watercolour', 'watercolor', 'hand painted', 'soft'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into hand-painted watercolour portrait. Delicate washes, flowing colors. Dreamy, artistic. Replace clothing and background only.') },
-      { id: 'soft-pastel', title: 'Soft Pastel Illustration', description: 'Gentle pastel tones.', searchKeywords: ['pastel', 'soft', 'gentle', 'dreamy'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into soft pastel illustration. Gentle tones, dreamy. Chalk-like texture. Whimsical aesthetic. Replace clothing and background only.') },
-      { id: 'whimsical-fantasy', title: 'Whimsical Fantasy', description: 'Playful fantasy style.', searchKeywords: ['whimsical', 'fantasy', 'playful', 'magical'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into whimsical fantasy portrait. Playful, magical. Soft fantasy elements. Dreamy aesthetic. Replace clothing and background only.') },
+      { id: 'classic-storybook', title: 'Classic Storybook Illustration', description: 'Beloved children\'s book style.', searchKeywords: ['storybook', 'illustration', 'children', 'classic'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as classic storybook illustration. Whimsical, illustrated. Soft lines, gentle colors. Children\'s book aesthetic. Replace clothing and background only.') },
+      { id: 'fairytale-art', title: "Children's Fairytale Art", description: 'Magical fairytale illustration.', searchKeywords: ['fairytale', 'children', 'magical', 'enchanted'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as children\'s fairytale art. Magical, enchanting. Soft colors, dreamy. Storybook aesthetic. Replace clothing and background only.') },
+      { id: 'hand-painted-watercolour', title: 'Hand-Painted Watercolour', description: 'Delicate watercolour washes.', searchKeywords: ['watercolour', 'watercolor', 'hand painted', 'soft'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as hand-painted watercolour portrait. Delicate washes, flowing colors. Dreamy, artistic. Replace clothing and background only.') },
+      { id: 'soft-pastel', title: 'Soft Pastel Illustration', description: 'Gentle pastel tones.', searchKeywords: ['pastel', 'soft', 'gentle', 'dreamy'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as soft pastel illustration. Gentle tones, dreamy. Chalk-like texture. Whimsical aesthetic. Replace clothing and background only.') },
+      { id: 'whimsical-fantasy', title: 'Whimsical Fantasy', description: 'Playful fantasy style.', searchKeywords: ['whimsical', 'fantasy', 'playful', 'magical'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as whimsical fantasy portrait. Playful, magical. Soft fantasy elements. Dreamy aesthetic. Replace clothing and background only.') },
     ],
   },
   {
     id: 'fantasy-classic',
     title: 'Classic Fantasy',
     styles: [
-      { id: 'high-fantasy-kingdom', title: 'High Fantasy Kingdom', description: 'Medieval fantasy world.', searchKeywords: ['high fantasy', 'kingdom', 'medieval', 'fantasy'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into high fantasy kingdom portrait. Medieval fantasy world. Noble or heroic attire. Castle, mountains. Replace clothing and background only.') },
-      { id: 'legendary-warrior', title: 'Legendary Warrior', description: 'Epic warrior portrait.', searchKeywords: ['legendary', 'warrior', 'epic', 'battle'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into legendary warrior portrait. Epic battle attire. Heroic pose. Fantasy world. Replace clothing and background only.') },
+      { id: 'high-fantasy-kingdom', title: 'High Fantasy Kingdom', description: 'Medieval fantasy world.', searchKeywords: ['high fantasy', 'kingdom', 'medieval', 'fantasy'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as high fantasy kingdom portrait. Medieval fantasy world. Noble or heroic attire. Castle, mountains. Replace clothing and background only.') },
+      { id: 'legendary-warrior', title: 'Legendary Warrior', description: 'Epic warrior portrait.', searchKeywords: ['legendary', 'warrior', 'epic', 'battle'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as legendary warrior portrait. Epic battle attire. Heroic pose. Fantasy world. Replace clothing and background only.') },
     ],
   },
 ]

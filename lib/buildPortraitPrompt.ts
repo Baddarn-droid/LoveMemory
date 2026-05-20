@@ -23,6 +23,7 @@ import {
   FAMILY_EXACT_PEOPLE_COUNT,
   FAMILY_FACE_IDENTITY_FIRST,
   FAMILY_FACE_IDENTITY_EMPHASIS,
+  FACE_EDIT_LOCK,
   NO_FILTER_FACE,
   PERIOD_CLOTHING_FIT,
   PET_COLLAR_FIT,
@@ -37,8 +38,10 @@ ${LIGHT_TOUCH_EDIT}`
 
 /** Identity + light-touch prefix — same structure for pets and family on every style */
 function buildIdentityPrefix(categoryId: CategoryId): string {
+  const faceLock = FACE_EDIT_LOCK
   if (categoryId === 'pets') {
     return [
+      faceLock,
       PET_FACE_IDENTITY_FIRST,
       NO_FILTER_FACE,
       FACE_PRESERVATION,
@@ -47,6 +50,7 @@ function buildIdentityPrefix(categoryId: CategoryId): string {
     ].join('\n\n')
   }
   return [
+    faceLock,
     FAMILY_FACE_IDENTITY_FIRST,
     NO_FILTER_FACE,
     FACE_PRESERVATION,
@@ -70,7 +74,7 @@ function buildIdentitySuffix(categoryId: CategoryId): string {
       FAMILY_FACE_IDENTITY_EMPHASIS
     )
   }
-  parts.push(FACE_PRESERVATION_EMPHASIS, NO_FILTER_FACE, LIGHT_TOUCH_EDIT)
+  parts.push(FACE_EDIT_LOCK, FACE_PRESERVATION_EMPHASIS, NO_FILTER_FACE, LIGHT_TOUCH_EDIT)
   return parts.join('\n\n')
 }
 
@@ -93,6 +97,9 @@ export function buildPortraitPrompt(options: {
   }
 
   prompt += (getStylePrompt(categoryId, styleId, subStyleId) || DEFAULT_PROMPT) + ''
+
+  prompt +=
+    '\n\nSTYLE SCOPE: The style instructions above apply ONLY to clothing, fabrics, and background. They do NOT apply to faces, skin, fur, or hair — those must remain unedited photographs from the source.'
 
   if (categoryId && styleId) {
     prompt = prompt + '\n\n' + FULL_FRAME_INSTRUCTION

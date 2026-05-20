@@ -5,14 +5,14 @@ import type { CategoryId } from './styles'
 export type PortraitTier = 'preview' | 'standard'
 
 /**
- * Fast preview — slightly higher quality; quality=low keeps faces unfiltered.
- * Same profile for preview + purchase (WYSIWYG).
+ * Face-first edit profile: input_fidelity=high locks likeness; quality=low keeps speed.
+ * PNG input avoids JPEG compression softening faces before the API sees them.
  */
 export const PORTRAIT_PREVIEW_CONFIG = {
   quality: 'low' as const,
-  canvasSize: 384,
+  inputFidelity: 'high' as const,
+  canvasSize: 512,
   outputSize: '1024x1024' as const,
-  inputJpegQuality: 78,
 }
 
 /** Purchased portraits use the same profile (WYSIWYG). */
@@ -23,18 +23,15 @@ const TIER_CONFIG: Record<PortraitTier, typeof PORTRAIT_PREVIEW_CONFIG> = {
   standard: PORTRAIT_STANDARD_CONFIG,
 }
 
-/** Resize / pad the uploaded photo before sending to OpenAI */
+/** Resize / pad the uploaded photo before sending to OpenAI — PNG preserves face detail */
 export async function prepareSourceImage(
   buffer: Buffer,
   category: CategoryId | null,
-  canvasSize: number = PORTRAIT_PREVIEW_CONFIG.canvasSize,
-  jpegQuality: number = PORTRAIT_PREVIEW_CONFIG.inputJpegQuality
-): Promise<{ buffer: Buffer; mimeType: 'image/jpeg'; filename: string }> {
+  canvasSize: number = PORTRAIT_PREVIEW_CONFIG.canvasSize
+): Promise<{ buffer: Buffer; mimeType: 'image/png'; filename: string }> {
   const needsTopPadding = category === 'pets' || category === 'family'
   const topPadding = Math.round(420 * (canvasSize / 1024))
   const contentHeight = Math.max(64, canvasSize - topPadding)
-
-  const jpegOpts = { quality: jpegQuality, mozjpeg: true } as const
 
   let processed: Buffer
 
@@ -55,16 +52,21 @@ export async function prepareSourceImage(
         right: canvasSize - w - left,
         background: { r: 45, g: 42, b: 38 },
       })
-      .jpeg(jpegOpts)
+      .png({ compressionLevel: 6 })
       .toBuffer()
   } else {
     processed = await sharp(buffer)
       .resize(canvasSize, canvasSize, { fit: 'inside', withoutEnlargement: true })
-      .jpeg(jpegOpts)
+      .png({ compressionLevel: 6 })
       .toBuffer()
   }
 
-  return { buffer: processed, mimeType: 'image/jpeg', filename: 'image.jpg' }
+  return { buffer: processed, mimeType: 'image/png', filename: 'image.png' }
+}
+
+/** OpenAI SDK types may lag behind API — input_fidelity is supported on gpt-image-1.5 edits */
+type ImageEditWithFidelity = OpenAI.Images.ImageEditParams & {
+  input_fidelity?: 'high' | 'low'
 }
 
 export async function generatePortraitImage(options: {
@@ -77,22 +79,20 @@ export async function generatePortraitImage(options: {
   const { apiKey, sourceBuffer, prompt, category, tier = 'preview' } = options
   const config = TIER_CONFIG[tier]
 
-  const prepared = await prepareSourceImage(
-    sourceBuffer,
-    category,
-    config.canvasSize,
-    config.inputJpegQuality
-  )
+  const prepared = await prepareSourceImage(sourceBuffer, category, config.canvasSize)
   const imageFile = await toFile(prepared.buffer, prepared.filename, { type: prepared.mimeType })
 
   const openai = new OpenAI({ apiKey })
-  const result = await openai.images.edit({
+  const editParams: ImageEditWithFidelity = {
     model: 'gpt-image-1.5',
     image: [imageFile],
     prompt,
     size: config.outputSize,
     quality: config.quality,
-  })
+    input_fidelity: config.inputFidelity,
+  }
+
+  const result = await openai.images.edit(editParams)
 
   const first = result.data?.[0]
   if (!first) {
