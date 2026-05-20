@@ -79,11 +79,12 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
     )
   )
   const effectiveClothingChoices = clothingChoicesProp ?? internalClothingChoices
-  const showClothingSelectors = categoryId === 'pets' && clothingChoicesProp === undefined && clothingOptions.length > 0
+  /** Clothing UI lives in RenaissanceFlow only — avoid silent Renaissance defaults on other styles */
+  const showClothingSelectors = false
 
   const [colourOptionId, setColourOptionId] = useState(COLOUR_OPTIONS[0]?.id ?? 'crimson-gold')
-  /** Renaissance sub-styles embed palette in the style choice — no second picker */
-  const showColourPalette = !hideColourPalette && !subStyleId
+  /** Era colours come from the style prompt / Renaissance sub-style — no standalone picker */
+  const showColourPalette = false
 
   useEffect(() => {
     setInternalClothingChoices(
@@ -160,15 +161,15 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
         categoryId,
         styleId,
         subStyleId,
-        colourOptionId: showColourPalette ? colourOptionId : undefined,
+        colourOptionId: undefined,
         petPose: effectivePetPose,
-        clothingChoices: Object.keys(effectiveClothingChoices).length ? effectiveClothingChoices : undefined,
+        clothingChoices: clothingChoicesProp,
       })
       const formData = new FormData()
       formData.append('image', uploadedFile)
       formData.append('prompt', prompt)
       formData.append('category', categoryId)
-      if (showColourPalette) formData.append('colourOptionId', colourOptionId)
+      formData.append('style', styleId)
       const apiBase = getApiBase()
       const res = await fetch(`${apiBase || ''}/api/generate-portrait`, { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))

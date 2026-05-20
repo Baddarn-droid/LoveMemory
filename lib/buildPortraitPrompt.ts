@@ -4,6 +4,7 @@
  */
 import {
   getStylePrompt,
+  getStylePreset,
   getClothingPromptText,
   getColourPromptText,
   FACE_PRESERVATION,
@@ -35,8 +36,15 @@ export function buildPortraitPrompt(options: {
   clothingChoices?: Record<string, string>
 }): string {
   const { categoryId, styleId, subStyleId, colourOptionId, petPose, clothingChoices } = options
+  const stylePreset = getStylePreset(categoryId, styleId)
   let prompt =
     (getStylePrompt(categoryId, styleId, subStyleId) || DEFAULT_PROMPT) + ''
+
+  if (stylePreset?.title) {
+    prompt =
+      `SELECTED STYLE: "${stylePreset.title}" (id: ${styleId}). The finished portrait MUST match this exact style — not a generic Renaissance court painting unless that is the selected style.\n\n` +
+      prompt
+  }
 
   if (categoryId === 'pets') {
     prompt = PET_COMPOSITION_FIRST + '\n\n' + prompt

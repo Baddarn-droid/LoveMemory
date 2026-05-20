@@ -252,7 +252,19 @@ export interface StyleLibraryEntry extends Omit<StylePreset, 'thumbnail'> {
   searchKeywords: string[]
 }
 
-/** Helper to create style prompt with face preservation */
+/** Helper to create style prompt with face preservation + era lock */
+function eraStylePrompt(eraLabel: string, styleInstructions: string, forbiddenEras: string[]): string {
+  const forbidden =
+    forbiddenEras.length > 0
+      ? `\n\nFORBIDDEN (do NOT use): ${forbiddenEras.join('; ')}.`
+      : ''
+  return `${FACE_PRESERVATION}
+
+STYLE LOCK — ${eraLabel} (mandatory): The portrait MUST read unmistakably as ${eraLabel}. Do NOT default to a generic Renaissance or Elizabethan look unless that is the selected style.
+
+${styleInstructions}${forbidden}`
+}
+
 function stylePrompt(base: string, styleInstructions: string): string {
   return `${base}\n\n${styleInstructions}`
 }
@@ -275,12 +287,16 @@ export const STYLE_GROUPS: StyleGroup[] = [
     title: 'Classic Art & Historical',
     styles: [
       { id: 'renaissance', title: 'Renaissance Oil Painting', description: '15th–16th century European masters.', searchKeywords: ['renaissance', 'oil', 'classical', 'old master'], subStyles: RENAISSANCE_SUB_STYLES, promptText: RENAISSANCE_BASE },
-      { id: 'baroque-royal', title: 'Baroque Royal Portrait', description: 'Rich velvet drapes, golden baroque frames.', searchKeywords: ['baroque', 'royal', 'velvet', 'golden'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into Baroque royal portrait. 17th-century European court. Rich crimson velvet, golden brocade, white ruffs. Opulent, luxurious. Replace clothing and background only.') },
-      { id: 'rococo-elegance', title: 'Rococo Elegance', description: 'Vibrant painterly style with bold brushstrokes.', searchKeywords: ['rococo', 'elegance', 'pastels', 'french court'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into Rococo portrait. 18th-century French court. Pale mint silk, pink satin, cream brocade. Soft pastels, rich color harmony. Replace clothing and background only.') },
-      { id: 'victorian-era', title: 'Victorian Era Portrait', description: 'Formal Victorian period style.', searchKeywords: ['victorian', 'era', 'formal', '19th century'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into Victorian era portrait. Formal period attire. Dark fabrics, high collars. Moody, dignified. Replace clothing and background only.') },
-      { id: 'edwardian', title: 'Edwardian Aristocracy', description: 'Elegant Edwardian country estate.', searchKeywords: ['edwardian', 'aristocracy', 'estate', 'elegant'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into Edwardian aristocracy portrait. Country estate elegance. Refined period attire. Soft natural light. Replace clothing and background only.') },
-      { id: 'dutch-golden', title: 'Dutch Golden Age', description: 'Rembrandt-inspired chiaroscuro.', searchKeywords: ['dutch', 'golden age', 'rembrandt', 'chiaroscuro'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into Dutch Golden Age portrait. Rembrandt-inspired chiaroscuro. Warm browns, dramatic light. Classical oil painting. Replace clothing and background only.') },
-      { id: 'pre-raphaelite', title: 'Pre-Raphaelite Style', description: 'Vivid, British Pre-Raphaelite.', searchKeywords: ['pre-raphaelite', 'medieval', 'vivid', 'british'], promptText: stylePrompt(FACE_PRESERVATION, 'Transform into Pre-Raphaelite portrait. Vivid colors, medieval-inspired. Flowing hair, nature elements. Dreamy, romantic. Replace clothing and background only.') },
+      { id: 'baroque-royal', title: 'Baroque Royal Portrait', description: 'Rich velvet drapes, golden baroque frames.', searchKeywords: ['baroque', 'royal', 'velvet', 'golden'], promptText: eraStylePrompt('Baroque royal portrait (17th-century European court)', 'Transform into Baroque royal portrait. Rich crimson or deep velvet, golden brocade trim, white lace collars or modest ruffs appropriate to the 1600s. Opulent, dramatic court lighting. Dark or draped background. Replace clothing and background only.', ['Victorian 19th-century dress', 'Renaissance 15th–16th century Florentine style', 'Rococo pastels', 'modern clothing']) },
+      { id: 'rococo-elegance', title: 'Rococo Elegance', description: 'Vibrant painterly style with bold brushstrokes.', searchKeywords: ['rococo', 'elegance', 'pastels', 'french court'], promptText: eraStylePrompt('Rococo portrait (18th-century French court)', 'Transform into Rococo portrait. Pale silk, pink satin, cream brocade, soft pastels, playful ornate details. Light, airy, decorative 18th-century French court aesthetic. Replace clothing and background only.', ['Victorian dark formal wear', 'Renaissance doublets and Tudor ruffs', 'Baroque heavy velvet', 'modern clothing']) },
+      { id: 'victorian-era', title: 'Victorian Era Portrait', description: 'Formal Victorian period style.', searchKeywords: ['victorian', 'era', 'formal', '19th century'], promptText: eraStylePrompt('Victorian era portrait (19th century, c. 1837–1901)', `Transform into a formal Victorian-era oil portrait or cabinet photograph aesthetic.
+CLOTHING: 19th-century formal dress — dark wool, velvet, or silk; high necklines; frock coats for men; modest bustled or period silhouettes for women; muted palette (black, navy, deep burgundy, brown, charcoal). Simple lace at collar if any — NOT large Elizabethan ruffs.
+BACKGROUND: Moody studio backdrop, dark interior, or subtle Victorian parlour — not golden Renaissance halos or Baroque theatre drapes.
+MOOD: Restrained, dignified, photographic or academic oil portrait of the Victorian period.
+Replace clothing and background only; keep faces photographic.`, ['Renaissance 15th–16th century dress', 'Elizabethan ruffs and doublets', 'gold brocade Renaissance sleeves', 'feathered Tudor caps', 'Baroque opulent crimson court', 'Rococo pastels']) },
+      { id: 'edwardian', title: 'Edwardian Aristocracy', description: 'Elegant Edwardian country estate.', searchKeywords: ['edwardian', 'aristocracy', 'estate', 'elegant'], promptText: eraStylePrompt('Edwardian aristocracy portrait (early 20th century)', 'Transform into Edwardian aristocracy portrait. Elegant country-estate attire: tailored suits, long Edwardian dresses, soft natural light, refined early-1900s British gentry aesthetic. Replace clothing and background only.', ['Victorian heavy dark formality only', 'Renaissance or Elizabethan dress', 'modern clothing']) },
+      { id: 'dutch-golden', title: 'Dutch Golden Age', description: 'Rembrandt-inspired chiaroscuro.', searchKeywords: ['dutch', 'golden age', 'rembrandt', 'chiaroscuro'], promptText: eraStylePrompt('Dutch Golden Age portrait (Rembrandt era)', 'Transform into Dutch Golden Age portrait. Rembrandt-inspired chiaroscuro, warm browns, black garments with white collars, dramatic single light source. 17th-century Dutch master oil painting. Replace clothing and background only.', ['Victorian 19th-century fashion', 'Renaissance Florentine colours', 'Rococo pastels']) },
+      { id: 'pre-raphaelite', title: 'Pre-Raphaelite Style', description: 'Vivid, British Pre-Raphaelite.', searchKeywords: ['pre-raphaelite', 'medieval', 'vivid', 'british'], promptText: eraStylePrompt('Pre-Raphaelite portrait (British Victorian art movement)', 'Transform into Pre-Raphaelite portrait. Vivid jewel tones, medieval-inspired flowing garments, romantic British 19th-century Pre-Raphaelite Brotherhood aesthetic — NOT generic Renaissance court dress. Nature or tapestry backgrounds. Replace clothing and background only.', ['Generic Renaissance court portrait', 'Baroque theatre', 'modern clothing']) },
     ],
   },
   {
