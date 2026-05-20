@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getCategoryBySlug, getStylePreset, getStyleTagline, CATEGORY_SLUGS, getAllStyleIdsForCategory } from '@/lib/styles'
 import { getExampleImages } from '@/lib/exampleImages'
-import { CreateFlow } from '@/components/CreateFlow'
+import { StyleCreateSection } from '@/components/StyleCreateSection'
 
 export function generateStaticParams() {
   const params: { category: string; style: string }[] = []
@@ -134,8 +134,8 @@ export default async function StylePage({ params }: { params: Promise<{ category
           </div>
         </div>
 
-        {/* Create section */}
-        <CreateFlow categoryId={category.id} styleId={style.id} />
+        {/* Create section — every style gets PortraitCustomizer + upload flow */}
+        <StyleCreateSection categoryId={category.id} styleId={style.id} styleTitle={style.title} />
       </div>
     </div>
   )

@@ -3,9 +3,9 @@
 import { motion } from 'framer-motion'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import type { CategoryId } from '@/lib/styles'
-import { CLOTHING_OPTIONS, COLOUR_OPTIONS, getDefaultClothingChoices } from '@/lib/styles'
 import { buildPortraitPrompt } from '@/lib/buildPortraitPrompt'
 import { getApiBase } from '@/lib/apiBase'
+import type { PortraitOptions } from '@/components/PortraitCustomizer'
 
 const ACCEPT = 'image/*'
 
@@ -34,56 +34,17 @@ function formatElapsed(seconds: number): string {
   return s > 0 ? `${m}m ${s}s` : `${m}m`
 }
 
-type PetPose = 'standing' | 'laying'
-
 interface CreateFlowProps {
   categoryId: CategoryId
   styleId: string
   subStyleId?: string
-  petPose?: PetPose
-  clothingChoices?: Record<string, string>
+  portraitOptions: PortraitOptions
 }
 
-function OptionButton({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-xl border px-5 py-3 text-sm font-medium transition-colors ${
-        selected
-          ? 'border-emerald-500/40 bg-emerald-500/10 text-white'
-          : 'border-white/10 bg-white/[0.02] text-white/70 hover:border-white/20 hover:bg-white/[0.04]'
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
-
-export function CreateFlow({ categoryId, styleId, subStyleId, petPose: _petPoseProp, clothingChoices: _clothingChoicesProp }: CreateFlowProps) {
+export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }: CreateFlowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [petPose, setPetPose] = useState<PetPose>('standing')
-  const effectivePetPose = categoryId === 'pets' ? petPose : undefined
-
-  const clothingOptions = CLOTHING_OPTIONS[categoryId] ?? []
-  const [clothingChoices, setClothingChoices] = useState<Record<string, string>>(() =>
-    getDefaultClothingChoices(categoryId)
-  )
-
-  /** Customisation available on every style page for pets and family */
-  const showColourPalette = true
-  const showPetPoseSelector = categoryId === 'pets'
-  const showClothingSelectors = clothingOptions.length > 0
-
-  const [colourOptionId, setColourOptionId] = useState('style-default')
-
-  useEffect(() => {
-    setClothingChoices(getDefaultClothingChoices(categoryId))
-  }, [categoryId])
-
-  const handleClothingChange = (optionId: string, choiceId: string) => {
-    setClothingChoices((prev) => ({ ...prev, [optionId]: choiceId }))
-  }
+  const effectivePetPose = categoryId === 'pets' ? portraitOptions.petPose : undefined
+  const { clothingChoices, colourOptionId } = portraitOptions
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null)
   const [generatedPreviewUrl, setGeneratedPreviewUrl] = useState<string | null>(null)
@@ -156,9 +117,9 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose: _petPoseP
         categoryId,
         styleId,
         subStyleId,
-        colourOptionId: showColourPalette ? colourOptionId : undefined,
+        colourOptionId: colourOptionId === 'style-default' ? undefined : colourOptionId,
         petPose: effectivePetPose,
-        clothingChoices: showClothingSelectors ? clothingChoices : undefined,
+        clothingChoices,
       })
       lastPromptRef.current = prompt
       const formData = new FormData()
@@ -212,9 +173,9 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose: _petPoseP
           categoryId,
           styleId,
           subStyleId,
-          colourOptionId: showColourPalette ? colourOptionId : undefined,
+          colourOptionId: colourOptionId === 'style-default' ? undefined : colourOptionId,
           petPose: effectivePetPose,
-          clothingChoices: showClothingSelectors ? clothingChoices : undefined,
+          clothingChoices,
         })
       const apiBase = getApiBase()
       const prep = await fetch(`${apiBase}/api/prepare-checkout`, {
@@ -261,95 +222,11 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose: _petPoseP
 
   return (
     <div id="create" className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 md:p-10">
-      {showColourPalette && (
-        <div className="mb-10">
-          <h3 className="mb-2 text-center text-sm font-medium uppercase tracking-widest text-white/50">
-            Choose your colour palette
-          </h3>
-          <p className="mb-6 text-center text-xs text-white/40">
-            Optional — &ldquo;Style default&rdquo; keeps colours from your chosen art style
-          </p>
-          <div className="space-y-4">
-            {COLOUR_OPTIONS.map((opt) => {
-              const isSelected = colourOptionId === opt.id
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setColourOptionId(opt.id)}
-                  className={`relative flex w-full flex-col items-start rounded-2xl border-2 p-6 text-left transition-colors ${
-                    isSelected
-                      ? 'border-emerald-500 bg-emerald-500/10'
-                      : 'border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]'
-                  }`}
-                >
-                  {isSelected && (
-                    <div className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20">
-                      <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                  <h4 className="pr-10 font-display text-lg font-semibold text-white" style={{ fontFamily: 'var(--font-satoshi)' }}>
-                    {opt.label}
-                  </h4>
-                  <div className="mt-4 flex gap-2.5">
-                    {(opt.colors ?? []).map((color, i) => (
-                      <span
-                        key={i}
-                        className="h-6 w-6 shrink-0 rounded-full border-2 border-white/20 shadow-sm"
-                        style={{ backgroundColor: color }}
-                        aria-hidden
-                      />
-                    ))}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Pet pose — all pet styles */}
-      {showPetPoseSelector && (
-        <div className="mb-8">
-          <h3 className="mb-4 text-sm font-medium uppercase tracking-widest text-white/40">
-            Pet Pose
-          </h3>
-          <div className="flex flex-wrap gap-3">
-            <OptionButton selected={petPose === 'standing'} onClick={() => setPetPose('standing')}>
-              Standing
-            </OptionButton>
-            <OptionButton selected={petPose === 'laying'} onClick={() => setPetPose('laying')}>
-              Laying on a pillow
-            </OptionButton>
-          </div>
-        </div>
-      )}
-
-      {/* Headwear & cape — Renaissance pet/family styles */}
-      {showClothingSelectors && (
-        <div className="mb-8 space-y-8">
-          {clothingOptions.map((opt) => (
-            <div key={opt.id}>
-              <h3 className="mb-4 text-sm font-medium uppercase tracking-widest text-white/40">
-                {opt.label}
-              </h3>
-              <div className="flex flex-wrap gap-3">
-                {opt.choices.map((choice) => (
-                  <OptionButton
-                    key={choice.id}
-                    selected={clothingChoices[opt.id] === choice.id}
-                    onClick={() => handleClothingChange(opt.id, choice.id)}
-                  >
-                    {choice.label}
-                  </OptionButton>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <p className="mb-6 text-center text-xs text-white/40">
+        <a href="#portrait-options" className="text-amber-300/80 underline-offset-2 hover:text-amber-200 hover:underline">
+          ↑ Change pose, headwear, or colours
+        </a>
+      </p>
 
       {/* Progress indicator */}
       <div className="mb-8">
