@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
-import path from 'path'
+import { orderPaths } from '@/lib/orderStorage'
 
 export async function GET(
   _request: NextRequest,
@@ -12,7 +12,7 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid order ID.' }, { status: 400 })
   }
 
-  const filePath = path.join('/tmp', `order-${orderId}.png`)
+  const filePath = orderPaths(orderId).preview
 
   try {
     const buffer = fs.readFileSync(filePath)

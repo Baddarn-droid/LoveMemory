@@ -1,6 +1,6 @@
 'use client'
 
-import { use } from 'react'
+import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getApiBase } from '@/lib/apiBase'
 
@@ -10,7 +10,7 @@ export function CheckoutSuccessClient({
   searchParams: Promise<{ session_id?: string; order_id?: string; option?: string }>
 }) {
   const params = use(searchParams)
-  const { order_id, option } = params
+  const { order_id, option, session_id } = params
 
   return (
     <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-24">
@@ -34,7 +34,9 @@ export function CheckoutSuccessClient({
         Thank you for your purchase.
       </p>
 
-      {order_id && option && <FulfillmentSection orderId={order_id} option={option} />}
+      {order_id && option && (
+        <FulfillmentSection orderId={order_id} option={option} sessionId={session_id} />
+      )}
 
       <div className="mt-10 flex flex-col gap-4 sm:flex-row">
         <Link
@@ -54,13 +56,85 @@ export function CheckoutSuccessClient({
   )
 }
 
-function FulfillmentSection({ orderId, option }: { orderId: string; option: string }) {
+type FulfillmentState = 'fulfilling' | 'ready' | 'error'
+
+function FulfillmentSection({
+  orderId,
+  option,
+  sessionId,
+}: {
+  orderId: string
+  option: string
+  sessionId?: string
+}) {
   const apiBase = getApiBase()
-  const orderImageUrl = `${apiBase || ''}/api/order/${orderId}/image`
+  const [state, setState] = useState<FulfillmentState>('fulfilling')
+  const [error, setError] = useState<string | null>(null)
+  const orderImageUrl = `${apiBase || ''}/api/order/${orderId}/image?t=${state === 'ready' ? Date.now() : 0}`
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function fulfill() {
+      if (!sessionId) {
+        setState('ready')
+        return
+      }
+
+      try {
+        const res = await fetch(`${apiBase || ''}/api/fulfill-order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, sessionId }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (cancelled) return
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Could not prepare your full-resolution portrait.')
+        }
+
+        setState('ready')
+      } catch (err) {
+        if (cancelled) return
+        setError(err instanceof Error ? err.message : 'Fulfillment failed.')
+        setState('error')
+      }
+    }
+
+    fulfill()
+    return () => {
+      cancelled = true
+    }
+  }, [apiBase, orderId, sessionId])
+
+  if (state === 'fulfilling') {
+    return (
+      <div className="mt-8 flex max-w-md flex-col items-center text-center">
+        <div className="mb-4 h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-emerald-400" />
+        <p className="text-base font-medium text-offwhite">Creating your full-resolution portrait…</p>
+        <p className="mt-2 text-sm text-offwhite/55">
+          This uses our highest quality settings and usually takes 30–60 seconds. Please keep this page open.
+        </p>
+      </div>
+    )
+  }
+
+  if (state === 'error') {
+    return (
+      <div className="mt-6 max-w-md rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-4 text-center">
+        <p className="text-sm text-red-200">{error}</p>
+        <p className="mt-2 text-xs text-offwhite/50">
+          If payment went through, contact support with your order reference and we&apos;ll help.
+        </p>
+      </div>
+    )
+  }
+
   if (option === 'download') {
     return (
       <div className="mt-6 text-center">
-        <p className="mb-4 text-offwhite/70">Your portrait is ready to download.</p>
+        <p className="mb-4 text-offwhite/70">Your full-resolution portrait is ready to download.</p>
         <a
           href={orderImageUrl}
           download={`portrait-${orderId}.png`}
@@ -79,7 +153,7 @@ function FulfillmentSection({ orderId, option }: { orderId: string; option: stri
     return (
       <div className="mt-6 max-w-md text-center">
         <p className="text-offwhite/70">
-          Your print order has been received. You can also download your portrait to print at home.
+          Your print order has been received. You can also download your full-resolution portrait to print at home.
         </p>
         <a
           href={orderImageUrl}

@@ -12,11 +12,11 @@ const ACCEPT = 'image/*'
 /** Shown while OpenAI paints the portrait — updates by elapsed seconds */
 const GENERATE_STATUS_STEPS: { afterSec: number; label: string }[] = [
   { afterSec: 0, label: 'Sending your photo to the studio…' },
-  { afterSec: 4, label: 'Applying your chosen style…' },
-  { afterSec: 12, label: 'Painting fabrics, lighting, and background…' },
-  { afterSec: 25, label: 'Refining portrait details…' },
-  { afterSec: 45, label: 'Almost there — complex portraits can take up to a minute…' },
-  { afterSec: 70, label: 'Still working — thank you for your patience…' },
+  { afterSec: 3, label: 'Applying your chosen style…' },
+  { afterSec: 8, label: 'Painting fabrics, lighting, and background…' },
+  { afterSec: 18, label: 'Refining portrait details…' },
+  { afterSec: 35, label: 'Almost there — hang tight…' },
+  { afterSec: 55, label: 'Still working — thank you for your patience…' },
 ]
 
 function getGenerateStatusMessage(elapsedSec: number): string {
@@ -110,6 +110,18 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const lastPromptRef = useRef<string>('')
+
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const result = reader.result as string
+        resolve(result.split(',')[1] ?? '')
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
 
   useEffect(() => {
     return () => {
@@ -165,11 +177,13 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
         petPose: effectivePetPose,
         clothingChoices: clothingChoicesProp,
       })
+      lastPromptRef.current = prompt
       const formData = new FormData()
       formData.append('image', uploadedFile)
       formData.append('prompt', prompt)
       formData.append('category', categoryId)
       formData.append('style', styleId)
+      formData.append('tier', 'preview')
       const apiBase = getApiBase()
       const res = await fetch(`${apiBase || ''}/api/generate-portrait`, { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))
@@ -203,16 +217,36 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
   }
 
   const handleCheckout = async (option: 'download' | 'print' | 'framed') => {
-    if (!generatedPreviewUrl) return
+    if (!generatedPreviewUrl || !uploadedFile) return
     setCheckoutLoading(option)
     setCheckoutError(null)
     try {
       const imageB64 = await getImageBase64()
+      const sourceImageB64 = await fileToBase64(uploadedFile)
+      const prompt =
+        lastPromptRef.current ||
+        buildPortraitPrompt({
+          categoryId,
+          styleId,
+          subStyleId,
+          colourOptionId: undefined,
+          petPose: effectivePetPose,
+          clothingChoices: clothingChoicesProp,
+        })
       const apiBase = getApiBase()
       const prep = await fetch(`${apiBase}/api/prepare-checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageB64, option }),
+        body: JSON.stringify({
+          imageB64,
+          sourceImageB64,
+          prompt,
+          category: categoryId,
+          style: styleId,
+          subStyleId,
+          petPose: effectivePetPose,
+          option,
+        }),
       })
       const prepData = await prep.json()
       if (!prep.ok) throw new Error(prepData.error || 'Failed to prepare checkout')
@@ -381,8 +415,8 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
             <p className="mt-1 text-sm text-white/50">or click to browse</p>
             <p className="mt-4 text-xs text-white/30">JPG, PNG up to 10MB</p>
             <p className="mt-3 max-w-xs text-xs text-white/40">
-              After you upload, generating your portrait usually takes{' '}
-              <span className="text-amber-200/80">30–60 seconds</span>.
+              After you upload, your free preview usually takes{' '}
+              <span className="text-amber-200/80">15–30 seconds</span>.
             </p>
         </div>
         </motion.div>
@@ -431,7 +465,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
                     {' elapsed · '}
                   </>
                 ) : null}
-                Usually 30–60 seconds total
+                Usually 15–30 seconds for preview
               </p>
               <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                 <div className="h-full w-2/5 animate-pulse rounded-full bg-gradient-to-r from-amber-500/40 via-amber-400 to-amber-500/40" />
@@ -451,9 +485,9 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
               )}
               <p className="mb-2 text-white/60">Preview your portrait before you buy — free to generate</p>
               <p className="mb-5 max-w-sm text-xs leading-relaxed text-amber-200/75">
-                When you click generate, our AI studio paints your portrait. This typically takes{' '}
-                <strong className="font-semibold text-amber-200">30–60 seconds</strong>. Please stay on
-                this page until it finishes.
+                We generate a quick preview first (typically{' '}
+                <strong className="font-semibold text-amber-200">15–30 seconds</strong>). After checkout you
+                receive the full high-resolution version. Please stay on this page until the preview finishes.
               </p>
               <button
                 onClick={generatePortrait}
@@ -477,9 +511,12 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
           animate={{ opacity: 1 }}
           className="w-full"
         >
-          <h2 className="mb-8 text-center text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-satoshi)' }}>
+          <h2 className="mb-2 text-center text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-satoshi)' }}>
             Your Masterpiece is Ready!
           </h2>
+          <p className="mb-8 text-center text-sm text-white/45">
+            Preview quality — full high-resolution portrait unlocked after purchase
+          </p>
 
           {/* Preview with watermark and edit buttons */}
           <div className="relative mx-auto mb-12 w-full max-w-md">
