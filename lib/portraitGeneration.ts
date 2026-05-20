@@ -1,28 +1,23 @@
 import OpenAI, { toFile } from 'openai'
 import sharp from 'sharp'
 import type { CategoryId } from './styles'
-import {
-  finishUnfilteredThemedPortrait,
-  type PreparedPortraitImage,
-  type SubjectRect,
-} from './facePreservation'
 
-/** Applies to every portrait — pets and family, all 40+ style routes. Do not bypass. */
+/** Applies to every portrait — pets and family, all 40+ style routes. */
 export const UNFILTERED_PIPELINE_APPLIES_TO: readonly CategoryId[] = ['pets', 'family'] as const
 
 export type PortraitTier = 'preview' | 'standard'
 
 /**
- * Theme-only portraits: input_fidelity=high + photoreal prompts (no source-photo overlay).
+ * Clean edit — no asymmetric padding (that caused picture-in-picture with input_fidelity).
+ * Composition is handled via prompts only.
  */
 export const PORTRAIT_PREVIEW_CONFIG = {
   quality: 'medium' as const,
-  inputFidelity: 'high' as const,
+  inputFidelity: 'low' as const,
   canvasSize: 1024,
   outputSize: '1024x1024' as const,
 }
 
-/** Purchased portraits use the same profile (WYSIWYG). */
 export const PORTRAIT_STANDARD_CONFIG = PORTRAIT_PREVIEW_CONFIG
 
 const TIER_CONFIG: Record<PortraitTier, typeof PORTRAIT_PREVIEW_CONFIG> = {
@@ -30,65 +25,34 @@ const TIER_CONFIG: Record<PortraitTier, typeof PORTRAIT_PREVIEW_CONFIG> = {
   standard: PORTRAIT_STANDARD_CONFIG,
 }
 
-/** Resize / pad the uploaded photo before sending to OpenAI */
+/** Neutral letterbox — symmetric padding only (never a huge top band). */
 export async function prepareSourceImage(
   buffer: Buffer,
-  category: CategoryId | null,
+  _category: CategoryId | null,
   canvasSize: number = PORTRAIT_PREVIEW_CONFIG.canvasSize
-): Promise<PreparedPortraitImage> {
-  const needsTopPadding = category === 'pets' || category === 'family'
-  const topPadding = Math.round(420 * (canvasSize / 1024))
-  const contentHeight = Math.max(64, canvasSize - topPadding)
+): Promise<Buffer> {
+  const resized = await sharp(buffer)
+    .resize(canvasSize, canvasSize, { fit: 'inside', withoutEnlargement: false })
+    .toBuffer()
 
-  let processed: Buffer
-  let subjectRect: SubjectRect
+  const meta = await sharp(resized).metadata()
+  const w = meta.width ?? canvasSize
+  const h = meta.height ?? canvasSize
+  const left = Math.round((canvasSize - w) / 2)
+  const top = Math.round((canvasSize - h) / 2)
 
-  if (needsTopPadding) {
-    const resized = await sharp(buffer)
-      .resize(canvasSize, contentHeight, { fit: 'inside', withoutEnlargement: true })
-      .toBuffer()
-    const meta = await sharp(resized).metadata()
-    const w = meta.width ?? canvasSize
-    const h = meta.height ?? contentHeight
-    const left = Math.round((canvasSize - w) / 2)
-    const bottom = canvasSize - topPadding - h
-    processed = await sharp(resized)
-      .extend({
-        top: topPadding,
-        bottom: Math.max(0, bottom),
-        left,
-        right: canvasSize - w - left,
-        background: { r: 45, g: 42, b: 38 },
-      })
-      .png({ compressionLevel: 6 })
-      .toBuffer()
-    subjectRect = { left, top: topPadding, width: w, height: h }
-  } else {
-    const resized = await sharp(buffer)
-      .resize(canvasSize, canvasSize, { fit: 'inside', withoutEnlargement: true })
-      .toBuffer()
-    const meta = await sharp(resized).metadata()
-    const w = meta.width ?? canvasSize
-    const h = meta.height ?? canvasSize
-    const left = Math.round((canvasSize - w) / 2)
-    const top = Math.round((canvasSize - h) / 2)
-    processed = await sharp(resized)
-      .extend({
-        top,
-        bottom: canvasSize - h - top,
-        left,
-        right: canvasSize - w - left,
-        background: { r: 45, g: 42, b: 38 },
-      })
-      .png({ compressionLevel: 6 })
-      .toBuffer()
-    subjectRect = { left, top, width: w, height: h }
-  }
-
-  return { buffer: processed, size: canvasSize, subjectRect }
+  return sharp(resized)
+    .extend({
+      top,
+      bottom: canvasSize - h - top,
+      left,
+      right: canvasSize - w - left,
+      background: { r: 32, g: 30, b: 28 },
+    })
+    .png({ compressionLevel: 6 })
+    .toBuffer()
 }
 
-/** OpenAI SDK types may lag behind API — input_fidelity is supported on gpt-image-1.5 edits */
 type ImageEditWithFidelity = OpenAI.Images.ImageEditParams & {
   input_fidelity?: 'high' | 'low'
 }
@@ -100,11 +64,11 @@ export async function generatePortraitImage(options: {
   category: CategoryId | null
   tier?: PortraitTier
 }): Promise<string> {
-  const { apiKey, sourceBuffer, prompt, category, tier = 'preview' } = options
+  const { apiKey, sourceBuffer, prompt, tier = 'preview' } = options
   const config = TIER_CONFIG[tier]
 
-  const prepared = await prepareSourceImage(sourceBuffer, category, config.canvasSize)
-  const imageFile = await toFile(prepared.buffer, 'image.png', { type: 'image/png' })
+  const prepared = await prepareSourceImage(sourceBuffer, null, config.canvasSize)
+  const imageFile = await toFile(prepared, 'image.png', { type: 'image/png' })
 
   const openai = new OpenAI({ apiKey })
   const editParams: ImageEditWithFidelity = {
@@ -123,21 +87,15 @@ export async function generatePortraitImage(options: {
     throw new Error('No image was generated.')
   }
 
-  let generatedB64: string
   if ('b64_json' in first && first.b64_json) {
-    generatedB64 = first.b64_json
-  } else if ('url' in first && first.url) {
-    const res = await fetch(first.url)
-    if (!res.ok) throw new Error('Failed to fetch generated image.')
-    generatedB64 = Buffer.from(await res.arrayBuffer()).toString('base64')
-  } else {
-    throw new Error('Unexpected response from OpenAI.')
+    return first.b64_json
   }
 
-  return finishUnfilteredThemedPortrait({
-    generatedB64,
-    sourcePrepared: prepared,
-    category,
-    outputSize: 1024,
-  })
+  if ('url' in first && first.url) {
+    const res = await fetch(first.url)
+    if (!res.ok) throw new Error('Failed to fetch generated image.')
+    return Buffer.from(await res.arrayBuffer()).toString('base64')
+  }
+
+  throw new Error('Unexpected response from OpenAI.')
 }

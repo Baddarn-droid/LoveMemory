@@ -42,4 +42,4 @@ if (errors) {
   process.exit(1)
 }
 console.log('\nAll routes use StyleCreateSection → PortraitCustomizer → CreateFlow')
-console.log('Generation: finishUnfilteredThemedPortrait — pets + family, every style (see audit-unfiltered-pipeline.ts)')
+console.log('Generation: clean OpenAI edit — symmetric letterbox, input_fidelity=low, all styles')
