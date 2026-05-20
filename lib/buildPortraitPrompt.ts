@@ -27,7 +27,7 @@ const DEFAULT_PROMPT = `${FACE_PRESERVATION}
 
 ${FULL_FRAME_INSTRUCTION}
 
-Transform this photo into a beautiful, artistic portrait. Use soft professional lighting, elegant and timeless style. Make it look like a premium custom portrait — refined, high quality, and worthy of framing. Do not apply any filter or effect to faces; keep them identical to the original.`
+Light touch edit only: change clothing and background to match the selected style. Keep faces and hair as untouched photographs from the original. Minimal processing — no heavy filters, no painterly face effects.`
 
 export function buildPortraitPrompt(options: {
   categoryId: CategoryId

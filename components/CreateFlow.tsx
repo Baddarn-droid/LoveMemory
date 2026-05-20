@@ -12,11 +12,11 @@ const ACCEPT = 'image/*'
 /** Shown while OpenAI paints the portrait — updates by elapsed seconds */
 const GENERATE_STATUS_STEPS: { afterSec: number; label: string }[] = [
   { afterSec: 0, label: 'Sending your photo to the studio…' },
-  { afterSec: 3, label: 'Applying your chosen style…' },
-  { afterSec: 8, label: 'Painting fabrics, lighting, and background…' },
-  { afterSec: 18, label: 'Refining portrait details…' },
-  { afterSec: 35, label: 'Almost there — hang tight…' },
-  { afterSec: 55, label: 'Still working — thank you for your patience…' },
+  { afterSec: 2, label: 'Applying your chosen style…' },
+  { afterSec: 6, label: 'Updating clothing and background…' },
+  { afterSec: 12, label: 'Keeping faces natural…' },
+  { afterSec: 22, label: 'Almost there…' },
+  { afterSec: 40, label: 'Still working — thank you for your patience…' },
 ]
 
 function getGenerateStatusMessage(elapsedSec: number): string {
@@ -127,6 +127,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
       formData.append('prompt', prompt)
       formData.append('category', categoryId)
       formData.append('style', styleId)
+      formData.append('tier', 'preview')
       const apiBase = getApiBase()
       const res = await fetch(`${apiBase || ''}/api/generate-portrait`, { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))
@@ -277,8 +278,8 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
             <p className="mt-1 text-sm text-white/50">or click to browse</p>
             <p className="mt-4 text-xs text-white/30">JPG, PNG up to 10MB</p>
             <p className="mt-3 max-w-xs text-xs text-white/40">
-              After you upload, generating your portrait usually takes{' '}
-              <span className="text-amber-200/80">15–30 seconds</span>.
+              Generation usually takes{' '}
+              <span className="text-amber-200/80">10–20 seconds</span> — we use a light edit to keep faces natural.
             </p>
         </div>
         </motion.div>
@@ -327,7 +328,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
                     {' elapsed · '}
                   </>
                 ) : null}
-                Usually 15–30 seconds
+                Usually 10–20 seconds
               </p>
               <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                 <div className="h-full w-2/5 animate-pulse rounded-full bg-gradient-to-r from-amber-500/40 via-amber-400 to-amber-500/40" />
@@ -347,9 +348,9 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
               )}
               <p className="mb-2 text-white/60">Generate your portrait before you buy — free to try</p>
               <p className="mb-5 max-w-sm text-xs leading-relaxed text-amber-200/75">
-                This typically takes{' '}
-                <strong className="font-semibold text-amber-200">15–30 seconds</strong>. What you see is what you
-                get — the same portrait is delivered after purchase. Please stay on this page until it finishes.
+                Fast light edit (typically{' '}
+                <strong className="font-semibold text-amber-200">10–20 seconds</strong>) — faces stay close to
+                your photo. What you see is what you get after purchase.
               </p>
               <button
                 onClick={generatePortrait}

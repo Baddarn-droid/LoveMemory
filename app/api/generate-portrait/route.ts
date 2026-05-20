@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
       sourceBuffer: buffer,
       prompt,
       category: categoryId,
+      tier: 'preview',
     })
 
     return NextResponse.json({ b64 })
