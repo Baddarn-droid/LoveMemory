@@ -230,7 +230,7 @@ export const CATEGORIES: CategoryConfig[] = [
       {
         id: 'renaissance',
         title: 'Renaissance',
-        description: 'Classical oil painting style inspired by European masters. Regal, timeless, museum-quality.',
+        description: 'Renaissance theme — photorealistic portrait, regal and timeless.',
         subStyles: RENAISSANCE_SUB_STYLES,
         promptText: `${RENAISSANCE_BASE}
 
@@ -251,7 +251,7 @@ FOR PETS SPECIFICALLY:
       {
         id: 'renaissance',
         title: 'Renaissance',
-        description: 'Classical oil painting style inspired by European masters. Elegant, timeless, gallery-worthy.',
+        description: 'Renaissance theme — photorealistic portrait, elegant and gallery-worthy.',
         subStyles: RENAISSANCE_SUB_STYLES,
         promptText: `${RENAISSANCE_BASE}
 
@@ -283,13 +283,30 @@ export function getStylesForCategory(categoryId: CategoryId): StylePreset[] {
 export function getStylePrompt(categoryId: CategoryId, styleId: string, subStyleId?: string): string | undefined {
   const style = getStylePreset(categoryId, styleId)
   if (!style?.promptText) return undefined
+  let raw: string
   if (subStyleId && style.subStyles) {
     const subStyle = style.subStyles.find((s) => s.id === subStyleId)
     if (subStyle) {
-      return `${style.promptText}\n\nSUB-STYLE: ${subStyle.promptModifier}`
+      raw = `${style.promptText}\n\nSUB-STYLE: ${subStyle.promptModifier}`
+    } else {
+      raw = style.promptText
     }
+  } else {
+    raw = style.promptText
   }
-  return style.promptText
+  return wrapStylePromptForGeneration(categoryId, raw)
+}
+
+/** Universal envelope — every category × every style, no exceptions */
+export function wrapStylePromptForGeneration(categoryId: CategoryId, rawPrompt: string): string {
+  const subject = categoryId === 'pets' ? 'pet' : 'family/couple'
+  return `${PHOTOREALISTIC_WHOLE_IMAGE}
+
+${FACE_EDIT_LOCK}
+
+${rawPrompt}
+
+THEME ONLY (${subject}, all styles): Period theme on clothing and background only. The ENTIRE image must be a sharp, unfiltered photograph — zero AI filters, zero painting/illustration look anywhere in the frame.`
 }
 
 export function getSubStyle(subStyleId: string): RenaissanceSubStyle | undefined {
@@ -336,15 +353,21 @@ function eraStylePrompt(eraLabel: string, styleInstructions: string, forbiddenEr
     forbiddenEras.length > 0
       ? `\n\nFORBIDDEN (do NOT use): ${forbiddenEras.join('; ')}.`
       : ''
-  return `${FACE_PRESERVATION}
+  return `${PHOTOREALISTIC_WHOLE_IMAGE}
 
-STYLE LOCK — ${eraLabel} (mandatory): The portrait MUST read unmistakably as ${eraLabel}. Do NOT default to a generic Renaissance or Elizabethan look unless that is the selected style.
+${FACE_PRESERVATION}
+
+STYLE LOCK — ${eraLabel} (mandatory): Theme via clothing and background only — photorealistic photograph, NOT a painting.
 
 ${styleInstructions}${forbidden}`
 }
 
 function stylePrompt(base: string, styleInstructions: string): string {
-  return `${base}\n\n${styleInstructions}`
+  return `${PHOTOREALISTIC_WHOLE_IMAGE}
+
+${base}
+
+${styleInstructions}`
 }
 
 /**
@@ -364,14 +387,14 @@ export const STYLE_GROUPS: StyleGroup[] = [
     id: 'classic-art',
     title: 'Classic Art & Historical',
     styles: [
-      { id: 'renaissance', title: 'Renaissance Oil Painting', description: '15th–16th century European masters.', searchKeywords: ['renaissance', 'oil', 'classical', 'old master'], subStyles: RENAISSANCE_SUB_STYLES, promptText: RENAISSANCE_BASE },
+      { id: 'renaissance', title: 'Renaissance Portrait', description: '15th–16th century European theme — photorealistic.', searchKeywords: ['renaissance', 'oil', 'classical', 'old master'], subStyles: RENAISSANCE_SUB_STYLES, promptText: RENAISSANCE_BASE },
       { id: 'baroque-royal', title: 'Baroque Royal Portrait', description: 'Rich velvet drapes, golden baroque frames.', searchKeywords: ['baroque', 'royal', 'velvet', 'golden'], promptText: eraStylePrompt('Baroque royal portrait (17th-century European court)', 'Edit photo: style clothing and background as Baroque royal portrait. Rich crimson or deep velvet, golden brocade trim, white lace collars or modest ruffs appropriate to the 1600s. Opulent, dramatic court lighting. Dark or draped background. Replace clothing and background only.', ['Victorian 19th-century dress', 'Renaissance 15th–16th century Florentine style', 'Rococo pastels', 'modern clothing']) },
       { id: 'rococo-elegance', title: 'Rococo Elegance', description: 'Vibrant painterly style with bold brushstrokes.', searchKeywords: ['rococo', 'elegance', 'pastels', 'french court'], promptText: eraStylePrompt('Rococo portrait (18th-century French court)', 'Edit photo: style clothing and background as Rococo portrait. Pale silk, pink satin, cream brocade, soft pastels, playful ornate details. Light, airy, decorative 18th-century French court aesthetic. Replace clothing and background only.', ['Victorian dark formal wear', 'Renaissance doublets and Tudor ruffs', 'Baroque heavy velvet', 'modern clothing']) },
       { id: 'victorian-era', title: 'Victorian Era Portrait', description: 'Formal Victorian period style.', searchKeywords: ['victorian', 'era', 'formal', '19th century'], promptText: eraStylePrompt('Victorian era portrait (19th century, c. 1837–1901)', `Edit photo: style clothing and background as a formal Victorian-era cabinet photograph aesthetic (NOT an oil painting of the face).
 CLOTHING: 19th-century formal dress — dark wool, velvet, or silk; high necklines; frock coats for men; modest bustled or period silhouettes for women; muted palette (black, navy, deep burgundy, brown, charcoal). Simple lace at collar if any — NOT large Elizabethan ruffs. Men's cravats or neckties worn INSIDE the shirt collar, knotted at the neck — never floating outside the collar.
 BACKGROUND: Moody studio backdrop, dark interior, or subtle Victorian parlour — not golden Renaissance halos or Baroque theatre drapes.
 MOOD: Restrained, dignified, photorealistic studio portrait of the Victorian period — like a real cabinet photograph, NOT a painting.
-Replace clothing and background only; keep faces photographic.`, ['Renaissance 15th–16th century dress', 'Elizabethan ruffs and doublets', 'gold brocade Renaissance sleeves', 'feathered Tudor caps', 'Baroque opulent crimson court', 'Rococo pastels']) },
+Replace clothing and background only. Photorealistic unfiltered photograph — zero filters on the whole image.`, ['Renaissance 15th–16th century dress', 'Elizabethan ruffs and doublets', 'gold brocade Renaissance sleeves', 'feathered Tudor caps', 'Baroque opulent crimson court', 'Rococo pastels']) },
       { id: 'edwardian', title: 'Edwardian Aristocracy', description: 'Elegant Edwardian country estate.', searchKeywords: ['edwardian', 'aristocracy', 'estate', 'elegant'], promptText: eraStylePrompt('Edwardian aristocracy portrait (early 20th century)', 'Edit photo: style clothing and background as Edwardian aristocracy portrait. Elegant country-estate attire: tailored suits, long Edwardian dresses, soft natural light, refined early-1900s British gentry aesthetic. Replace clothing and background only.', ['Victorian heavy dark formality only', 'Renaissance or Elizabethan dress', 'modern clothing']) },
       { id: 'dutch-golden', title: 'Dutch Golden Age', description: 'Rembrandt-inspired chiaroscuro.', searchKeywords: ['dutch', 'golden age', 'rembrandt', 'chiaroscuro'], promptText: eraStylePrompt('Dutch Golden Age portrait (Rembrandt era)', 'Edit photo: style clothing and background as Dutch Golden Age portrait. Rembrandt-inspired chiaroscuro on background and garments only, warm browns, black garments with white collars, dramatic single light source. Replace clothing and background only.', ['Victorian 19th-century fashion', 'Renaissance Florentine colours', 'Rococo pastels']) },
       { id: 'pre-raphaelite', title: 'Pre-Raphaelite Style', description: 'Vivid, British Pre-Raphaelite.', searchKeywords: ['pre-raphaelite', 'medieval', 'vivid', 'british'], promptText: eraStylePrompt('Pre-Raphaelite portrait (British Victorian art movement)', 'Edit photo: style clothing and background as Pre-Raphaelite portrait. Vivid jewel tones, medieval-inspired flowing garments, romantic British 19th-century Pre-Raphaelite Brotherhood aesthetic — NOT generic Renaissance court dress. Nature or tapestry backgrounds. Replace clothing and background only.', ['Generic Renaissance court portrait', 'Baroque theatre', 'modern clothing']) },
@@ -410,8 +433,8 @@ Replace clothing and background only; keep faces photographic.`, ['Renaissance 1
     id: 'fantasy-classic',
     title: 'Classic Fantasy',
     styles: [
-      { id: 'high-fantasy-kingdom', title: 'High Fantasy Kingdom', description: 'Medieval fantasy world.', searchKeywords: ['high fantasy', 'kingdom', 'medieval', 'fantasy'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as high fantasy kingdom portrait. Medieval fantasy world. Noble or heroic attire. Castle, mountains. Replace clothing and background only.') },
-      { id: 'legendary-warrior', title: 'Legendary Warrior', description: 'Epic warrior portrait.', searchKeywords: ['legendary', 'warrior', 'epic', 'battle'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as legendary warrior portrait. Epic battle attire. Heroic pose. Fantasy world. Replace clothing and background only.') },
+      { id: 'high-fantasy-kingdom', title: 'High Fantasy Kingdom', description: 'Medieval fantasy world.', searchKeywords: ['high fantasy', 'kingdom', 'medieval', 'fantasy'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as high fantasy kingdom portrait. Medieval fantasy world. Noble or heroic attire. Castle, mountains. Photorealistic photograph — no filters. Replace clothing and background only.') },
+      { id: 'legendary-warrior', title: 'Legendary Warrior', description: 'Epic warrior portrait.', searchKeywords: ['legendary', 'warrior', 'epic', 'battle'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as legendary warrior portrait. Epic battle attire. Heroic pose. Fantasy world. Photorealistic photograph — no filters. Replace clothing and background only.') },
     ],
   },
 ]

@@ -1,6 +1,9 @@
 import OpenAI, { toFile } from 'openai'
 import sharp from 'sharp'
 import type { CategoryId } from './styles'
+
+/** Applies to every portrait — pets and family, all 40+ style routes. Do not bypass. */
+export const UNFILTERED_PIPELINE_APPLIES_TO: readonly CategoryId[] = ['pets', 'family'] as const
 import {
   buildEditMask,
   finishUnfilteredThemedPortrait,
@@ -137,7 +140,10 @@ export async function generatePortraitImage(options: {
     throw new Error('Unexpected response from OpenAI.')
   }
 
-  // Theme from AI + unfiltered photo finish on the whole image (all categories)
+  // Universal post-process: theme from AI + unfiltered photo finish (pets + family, all styles)
+  if (!UNFILTERED_PIPELINE_APPLIES_TO.includes(category as CategoryId) && category !== null) {
+    console.warn('generatePortraitImage: unknown category — still applying unfiltered finish')
+  }
   return finishUnfilteredThemedPortrait({
     generatedB64,
     sourcePrepared: prepared,
