@@ -46,7 +46,7 @@ export const RENAISSANCE_SUB_STYLES: RenaissanceSubStyle[] = [
     description: 'Timeless elegance with refined brushwork and classical composition.',
     promptModifier: `Florentine Renaissance style inspired by Botticelli and early Italian masters.
 CLOTHING & FABRICS: Wear flowing robes in deep burgundy/maroon (#6B2D2D), cream silk undershirts (#FFFFFF), and golden tan brocade accents (#C4A574). Delicate gold jewelry (#D4AF37). Dark charcoal background (#2C2C2C).
-STYLE: Refined delicate brushwork on BACKGROUND AND GARMENTS ONLY (never faces). Classical composition. Warm golden light.`,
+STYLE: Photorealistic — rich fabric colours and studio background only. Warm natural light. No artistic filters.`,
     colors: ['#6B2D2D', '#C4A574', '#FFFFFF', '#D4AF37', '#2C2C2C'],
   },
   {
@@ -55,7 +55,7 @@ STYLE: Refined delicate brushwork on BACKGROUND AND GARMENTS ONLY (never faces).
     description: 'Atmospheric Renaissance style with dramatic lighting and old master quality.',
     promptModifier: `Renaissance Sky / Caravaggio style with dramatic chiaroscuro.
 CLOTHING & FABRICS: Wear dark brown leather and earth-toned robes (#3D2C1E), silver-grey silk accents (#9E9E9E), white lace collars (#FFFFFF). Gold chain jewelry (#D4AF37). Deep navy blue atmospheric background (#1A2A3A).
-STYLE: Moody theatrical lighting on background and garments only (never faces). Old master quality background.`,
+STYLE: Photorealistic dramatic studio lighting on background and garments only. Natural photo quality.`,
     colors: ['#3D2C1E', '#9E9E9E', '#FFFFFF', '#D4AF37', '#1A2A3A'],
   },
   {
@@ -64,7 +64,7 @@ STYLE: Moody theatrical lighting on background and garments only (never faces). 
     description: 'Classic royal portrait with rich velvet drapes and golden baroque frames.',
     promptModifier: `Baroque royal portrait style, 17th-century European court.
 CLOTHING & FABRICS: Wear vibrant crimson and deep red velvet (#8B0000), golden brocade embroidery (#D4AF37), silver-trimmed accessories (#C0C0C0), white ruffs (#FFFFFF). Olive green velvet accents (#6B8E23). Rich velvet drapes in background.
-STYLE: Opulent luxurious garments and background only (never faces). Jewel tones. Dramatic court lighting.`,
+STYLE: Photorealistic opulent garments and background. Jewel tones. Natural photograph — no filters.`,
     colors: ['#8B0000', '#D4AF37', '#C0C0C0', '#FFFFFF', '#6B8E23'],
   },
   {
@@ -73,17 +73,25 @@ STYLE: Opulent luxurious garments and background only (never faces). Jewel tones
     description: 'Vibrant painterly style with bold brushstrokes and rich color harmony.',
     promptModifier: `Rococo style, 18th-century French court aesthetic.
 CLOTHING & FABRICS: Wear pale mint green silk (#4A7C59), light pink satin and rose accents (#E8A0A0), white lace and ribbons (#FFFFFF), cream and tan brocade (#C4A574). Golden decorative elements (#D4AF37).
-STYLE: Vibrant painterly look on BACKGROUND AND GARMENTS ONLY (never faces). Soft pastels, rich color harmony.`,
+STYLE: Photorealistic pastel garments and background. Natural photograph — no painterly or soft filters.`,
     colors: ['#4A7C59', '#E8A0A0', '#FFFFFF', '#C4A574', '#D4AF37'],
   },
 ]
 
+/** Whole-image photoreal mandate — theme on clothes/background only, no filters anywhere */
+export const PHOTOREALISTIC_WHOLE_IMAGE = `PHOTOREALISTIC PHOTOGRAPH — ENTIRE IMAGE (mandatory, all categories):
+- Output must look like an unedited DSLR photograph — NOT a painting, illustration, watercolour, or AI art
+- Apply the selected THEME only via period clothing, fabrics, props, and background setting
+- ZERO filters on the whole picture: no soft focus, no glow, no colour grading, no beauty filter, no airbrush, no painterly effect, no dreamy haze, no Instagram look
+- Sharp natural detail everywhere — background, clothing, skin, fur — like a real camera photo
+- Theme = wardrobe + environment. Everything else stays photoreal and unfiltered`
+
 /** Virtual try-on edit lock — must be first in every prompt (OpenAI cookbook pattern) */
-export const FACE_EDIT_LOCK = `EDIT MODE — PRESERVE FACE EXACTLY (highest priority, overrides all style instructions):
-Edit this photo like virtual try-on: change ONLY clothing and background to match the selected style.
-DO NOT change: face, facial features, skin tone, skin texture, pores, freckles, moles, wrinkles, scars, expression, eye colour/shape, nose, mouth, lips, eyebrows, hair colour, hair length, hair style, body shape, or pose.
-The face must remain a sharp, raw, unfiltered photograph — identical to the upload. No beauty filter, no skin smoothing, no airbrush, no soft focus, no glamour retouch, no makeup enhancement, no painterly or illustrated effect on skin.
-If the face looks retouched, filtered, softened, or "improved" in any way, the edit has FAILED.`
+export const FACE_EDIT_LOCK = `EDIT MODE — THEME ONLY, NO FILTERS (highest priority):
+Edit this photo like a costume + set change on a real photoshoot. Change ONLY clothing and background to match the selected theme.
+The ENTIRE image must remain a sharp, raw, unfiltered photograph — identical photo quality to the upload.
+DO NOT change: face, skin texture, pores, expression, hair, body shape, or pose.
+FORBIDDEN on the whole image: beauty filter, skin smoothing, soft focus, glow, painterly effect, illustration style, colour grading, AI art look.`
 
 /** Absolute no-filter rule — both pets and people, every style */
 export const NO_FILTER_FACE = `ZERO FILTERS ON FACES (mandatory — all categories):
@@ -106,11 +114,10 @@ export const PET_COLLAR_FIT = `COLLAR & COSTUME FIT (mandatory for pets):
 - Accessories must attach naturally; no floating elements through fur`
 
 /** Shared light-touch generation instruction — applies to pets and family on every style */
-export const LIGHT_TOUCH_EDIT = `LIGHT TOUCH EDIT (all categories, preview and purchase):
-- Minimal processing — subtle edit only; preserve likeness of every subject
-- Change clothing, accessories, and background to match the selected style
-- Keep faces, hair, and fur on the head as untouched photographs from the original upload
-- NO heavy filters, NO painterly face effects, NO beauty smoothing, NO airbrush`
+export const LIGHT_TOUCH_EDIT = `THEME-ONLY EDIT (all categories):
+- Change clothing, accessories, and background to match the selected theme
+- Keep the whole image looking like an unfiltered photograph — no AI processing look
+- Sharp detail, natural colours, real textures throughout the entire picture`
 
 /** Base instruction for face preservation — no filters; maximum recognizability for pets and humans */
 export const FACE_PRESERVATION = `CRITICAL - FACE PRESERVATION (NO FILTERS):
@@ -207,11 +214,11 @@ ADD RENAISSANCE ELEMENTS (clothing and background only — never faces or hair):
 - Use rich fabrics: velvet, silk, brocade on garments only
 - Add a classical background (colors and style from chosen sub-style)
 
-ARTISTIC STYLE (background and clothing only — never faces, fur, or hair):
-- Subtle painterly background and garments; faces remain photographic
+ARTISTIC STYLE (background and clothing only — entire image stays photoreal):
+- Photorealistic themed clothing and background — NOT a painting or illustration
 - Use the exact color palette specified for clothing, jewelry, and background
-- Gallery-worthy composition
-- Natural, dignified pose`
+- Natural dignified pose; sharp camera-photo quality throughout
+- NO filters, NO soft focus, NO painterly effects on any part of the image`
 
 export const CATEGORIES: CategoryConfig[] = [
   {
@@ -363,7 +370,7 @@ export const STYLE_GROUPS: StyleGroup[] = [
       { id: 'victorian-era', title: 'Victorian Era Portrait', description: 'Formal Victorian period style.', searchKeywords: ['victorian', 'era', 'formal', '19th century'], promptText: eraStylePrompt('Victorian era portrait (19th century, c. 1837–1901)', `Edit photo: style clothing and background as a formal Victorian-era cabinet photograph aesthetic (NOT an oil painting of the face).
 CLOTHING: 19th-century formal dress — dark wool, velvet, or silk; high necklines; frock coats for men; modest bustled or period silhouettes for women; muted palette (black, navy, deep burgundy, brown, charcoal). Simple lace at collar if any — NOT large Elizabethan ruffs. Men's cravats or neckties worn INSIDE the shirt collar, knotted at the neck — never floating outside the collar.
 BACKGROUND: Moody studio backdrop, dark interior, or subtle Victorian parlour — not golden Renaissance halos or Baroque theatre drapes.
-MOOD: Restrained, dignified, photographic or academic oil portrait of the Victorian period.
+MOOD: Restrained, dignified, photorealistic studio portrait of the Victorian period — like a real cabinet photograph, NOT a painting.
 Replace clothing and background only; keep faces photographic.`, ['Renaissance 15th–16th century dress', 'Elizabethan ruffs and doublets', 'gold brocade Renaissance sleeves', 'feathered Tudor caps', 'Baroque opulent crimson court', 'Rococo pastels']) },
       { id: 'edwardian', title: 'Edwardian Aristocracy', description: 'Elegant Edwardian country estate.', searchKeywords: ['edwardian', 'aristocracy', 'estate', 'elegant'], promptText: eraStylePrompt('Edwardian aristocracy portrait (early 20th century)', 'Edit photo: style clothing and background as Edwardian aristocracy portrait. Elegant country-estate attire: tailored suits, long Edwardian dresses, soft natural light, refined early-1900s British gentry aesthetic. Replace clothing and background only.', ['Victorian heavy dark formality only', 'Renaissance or Elizabethan dress', 'modern clothing']) },
       { id: 'dutch-golden', title: 'Dutch Golden Age', description: 'Rembrandt-inspired chiaroscuro.', searchKeywords: ['dutch', 'golden age', 'rembrandt', 'chiaroscuro'], promptText: eraStylePrompt('Dutch Golden Age portrait (Rembrandt era)', 'Edit photo: style clothing and background as Dutch Golden Age portrait. Rembrandt-inspired chiaroscuro on background and garments only, warm browns, black garments with white collars, dramatic single light source. Replace clothing and background only.', ['Victorian 19th-century fashion', 'Renaissance Florentine colours', 'Rococo pastels']) },
@@ -392,11 +399,11 @@ Replace clothing and background only; keep faces photographic.`, ['Renaissance 1
     id: 'storybook-whimsical',
     title: 'Storybook & Whimsical',
     styles: [
-      { id: 'classic-storybook', title: 'Classic Storybook Illustration', description: 'Beloved children\'s book style.', searchKeywords: ['storybook', 'illustration', 'children', 'classic'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as classic storybook illustration. Whimsical, illustrated. Soft lines, gentle colors. Children\'s book aesthetic. Replace clothing and background only.') },
-      { id: 'fairytale-art', title: "Children's Fairytale Art", description: 'Magical fairytale illustration.', searchKeywords: ['fairytale', 'children', 'magical', 'enchanted'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as children\'s fairytale art. Magical, enchanting. Soft colors, dreamy. Storybook aesthetic. Replace clothing and background only.') },
-      { id: 'hand-painted-watercolour', title: 'Hand-Painted Watercolour', description: 'Delicate watercolour washes.', searchKeywords: ['watercolour', 'watercolor', 'hand painted', 'soft'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as hand-painted watercolour portrait. Delicate washes, flowing colors. Dreamy, artistic. Replace clothing and background only.') },
-      { id: 'soft-pastel', title: 'Soft Pastel Illustration', description: 'Gentle pastel tones.', searchKeywords: ['pastel', 'soft', 'gentle', 'dreamy'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as soft pastel illustration. Gentle tones, dreamy. Chalk-like texture. Whimsical aesthetic. Replace clothing and background only.') },
-      { id: 'whimsical-fantasy', title: 'Whimsical Fantasy', description: 'Playful fantasy style.', searchKeywords: ['whimsical', 'fantasy', 'playful', 'magical'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as whimsical fantasy portrait. Playful, magical. Soft fantasy elements. Dreamy aesthetic. Replace clothing and background only.') },
+      { id: 'classic-storybook', title: 'Classic Storybook Illustration', description: 'Beloved children\'s book style.', searchKeywords: ['storybook', 'illustration', 'children', 'classic'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background with classic storybook theme. Whimsical period costume and charming storybook-style background. Photorealistic photograph — NOT an illustration. Replace clothing and background only.') },
+      { id: 'fairytale-art', title: "Children's Fairytale Art", description: 'Magical fairytale illustration.', searchKeywords: ['fairytale', 'children', 'magical', 'enchanted'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background with fairytale theme. Magical period costume and enchanted background setting. Photorealistic photograph — NOT an illustration. Replace clothing and background only.') },
+      { id: 'hand-painted-watercolour', title: 'Hand-Painted Watercolour', description: 'Delicate watercolour washes.', searchKeywords: ['watercolour', 'watercolor', 'hand painted', 'soft'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background with soft watercolour-inspired pastel theme colours. Photorealistic photograph — NOT a watercolour painting. Replace clothing and background only.') },
+      { id: 'soft-pastel', title: 'Soft Pastel Illustration', description: 'Gentle pastel tones.', searchKeywords: ['pastel', 'soft', 'gentle', 'dreamy'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background with soft pastel theme colours. Photorealistic photograph — NOT an illustration. Replace clothing and background only.') },
+      { id: 'whimsical-fantasy', title: 'Whimsical Fantasy', description: 'Playful fantasy style.', searchKeywords: ['whimsical', 'fantasy', 'playful', 'magical'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background with whimsical fantasy theme. Playful period costume and fantasy background. Photorealistic photograph — no filters. Replace clothing and background only.') },
     ],
   },
   {
@@ -470,7 +477,7 @@ export const COLOUR_OPTIONS: ColourOption[] = [
   { id: 'royal-purple', label: 'Royal Purple & Gold', promptText: 'Use a colour palette of royal purple and gold for clothing and background. Purple velvet, gold trim and jewellery. Regal tones.', colors: ['#4B0082', '#6A0DAD', '#D4AF37', '#E6E6FA', '#2C2C2C'] },
   { id: 'earth-bronze', label: 'Earth Tones & Bronze', promptText: 'Use a colour palette of earth tones (brown, tan, olive) and bronze for clothing and background. Warm, muted, classical.', colors: ['#3D2C1E', '#8B7355', '#CD7F32', '#D2B48C', '#2C2C2C'] },
   { id: 'black-gold', label: 'Classic Black & Gold', promptText: 'Use a colour palette of black and gold for clothing and background. Black velvet, gold embroidery and jewellery. Timeless, formal.', colors: ['#1A1A1A', '#2C2C2C', '#D4AF37', '#FFD700', '#4A4A4A'] },
-  { id: 'soft-pastels', label: 'Soft Pastels', promptText: 'Use a soft pastel colour palette (pale pink, mint, cream, lavender) for clothing and background. Gentle, dreamy tones.', colors: ['#E8A0A0', '#98D8AA', '#FFF8E7', '#E6E6FA', '#F5DEB3'] },
+  { id: 'soft-pastels', label: 'Soft Pastels', promptText: 'Use a soft pastel colour palette (pale pink, mint, cream, lavender) for clothing and background. Photorealistic — no soft filters.', colors: ['#E8A0A0', '#98D8AA', '#FFF8E7', '#E6E6FA', '#F5DEB3'] },
 ]
 
 export function getColourPromptText(colourOptionId: string | undefined): string {

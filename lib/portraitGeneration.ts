@@ -3,7 +3,7 @@ import sharp from 'sharp'
 import type { CategoryId } from './styles'
 import {
   buildEditMask,
-  compositeOriginalFaces,
+  finishUnfilteredThemedPortrait,
   type PreparedPortraitImage,
   type SubjectRect,
 } from './facePreservation'
@@ -11,8 +11,8 @@ import {
 export type PortraitTier = 'preview' | 'standard'
 
 /**
- * Face preservation: input_fidelity=high + edit mask + post-composite original face pixels.
- * The composite step guarantees zero filters — face is copied verbatim from the upload.
+ * Theme-only portraits: input_fidelity=high + face mask + whole-image photoreal finish.
+ * Post-processing restores original photo detail across the entire frame — no filters.
  */
 export const PORTRAIT_PREVIEW_CONFIG = {
   quality: 'medium' as const,
@@ -137,8 +137,8 @@ export async function generatePortraitImage(options: {
     throw new Error('Unexpected response from OpenAI.')
   }
 
-  // Hard guarantee: paste original face pixels over the AI output (all categories)
-  return compositeOriginalFaces({
+  // Theme from AI + unfiltered photo finish on the whole image (all categories)
+  return finishUnfilteredThemedPortrait({
     generatedB64,
     sourcePrepared: prepared,
     category,

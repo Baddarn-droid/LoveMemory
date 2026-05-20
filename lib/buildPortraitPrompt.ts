@@ -25,6 +25,7 @@ import {
   FAMILY_FACE_IDENTITY_EMPHASIS,
   FACE_EDIT_LOCK,
   NO_FILTER_FACE,
+  PHOTOREALISTIC_WHOLE_IMAGE,
   PERIOD_CLOTHING_FIT,
   PET_COLLAR_FIT,
   type CategoryId,
@@ -38,23 +39,14 @@ ${LIGHT_TOUCH_EDIT}`
 
 /** Identity + light-touch prefix — same structure for pets and family on every style */
 function buildIdentityPrefix(categoryId: CategoryId): string {
-  const faceLock = FACE_EDIT_LOCK
+  const core = [FACE_EDIT_LOCK, PHOTOREALISTIC_WHOLE_IMAGE, NO_FILTER_FACE, LIGHT_TOUCH_EDIT]
   if (categoryId === 'pets') {
-    return [
-      faceLock,
-      PET_FACE_IDENTITY_FIRST,
-      NO_FILTER_FACE,
-      FACE_PRESERVATION,
-      LIGHT_TOUCH_EDIT,
-      PET_COMPOSITION_FIRST,
-    ].join('\n\n')
+    return [...core, PET_FACE_IDENTITY_FIRST, FACE_PRESERVATION, PET_COMPOSITION_FIRST].join('\n\n')
   }
   return [
-    faceLock,
+    ...core,
     FAMILY_FACE_IDENTITY_FIRST,
-    NO_FILTER_FACE,
     FACE_PRESERVATION,
-    LIGHT_TOUCH_EDIT,
     FAMILY_EXACT_PEOPLE_COUNT,
     FAMILY_COMPOSITION_FIRST,
   ].join('\n\n')
@@ -74,7 +66,13 @@ function buildIdentitySuffix(categoryId: CategoryId): string {
       FAMILY_FACE_IDENTITY_EMPHASIS
     )
   }
-  parts.push(FACE_EDIT_LOCK, FACE_PRESERVATION_EMPHASIS, NO_FILTER_FACE, LIGHT_TOUCH_EDIT)
+  parts.push(
+    PHOTOREALISTIC_WHOLE_IMAGE,
+    FACE_EDIT_LOCK,
+    FACE_PRESERVATION_EMPHASIS,
+    NO_FILTER_FACE,
+    LIGHT_TOUCH_EDIT
+  )
   return parts.join('\n\n')
 }
 
@@ -99,7 +97,7 @@ export function buildPortraitPrompt(options: {
   prompt += (getStylePrompt(categoryId, styleId, subStyleId) || DEFAULT_PROMPT) + ''
 
   prompt +=
-    '\n\nSTYLE SCOPE: The style instructions above apply ONLY to clothing, fabrics, and background. They do NOT apply to faces, skin, fur, or hair — those must remain unedited photographs from the source.'
+    '\n\nSTYLE SCOPE: Theme applies ONLY to clothing and background. The ENTIRE image must stay a sharp, unfiltered photograph — no painting, illustration, or AI filter look anywhere.'
 
   if (categoryId && styleId) {
     prompt = prompt + '\n\n' + FULL_FRAME_INSTRUCTION
