@@ -13,10 +13,10 @@ const ACCEPT = 'image/*'
 const GENERATE_STATUS_STEPS: { afterSec: number; label: string }[] = [
   { afterSec: 0, label: 'Sending your photo to the studio…' },
   { afterSec: 2, label: 'Applying your chosen style…' },
-  { afterSec: 5, label: 'Updating clothing and background…' },
-  { afterSec: 10, label: 'Keeping faces natural…' },
-  { afterSec: 18, label: 'Almost there…' },
-  { afterSec: 30, label: 'Still working — thank you for your patience…' },
+  { afterSec: 4, label: 'Updating clothing and background…' },
+  { afterSec: 8, label: 'Keeping faces natural…' },
+  { afterSec: 14, label: 'Almost there…' },
+  { afterSec: 22, label: 'Still working — thank you for your patience…' },
 ]
 
 function getGenerateStatusMessage(elapsedSec: number): string {
@@ -279,7 +279,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
             <p className="mt-4 text-xs text-white/30">JPG, PNG up to 10MB</p>
             <p className="mt-3 max-w-xs text-xs text-white/40">
               Generation usually takes{' '}
-              <span className="text-amber-200/80">5–15 seconds</span> — fast light edit, faces stay natural.
+              <span className="text-amber-200/80">3–10 seconds</span> — ultra-fast light edit, faces stay natural.
             </p>
         </div>
         </motion.div>
@@ -328,7 +328,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
                     {' elapsed · '}
                   </>
                 ) : null}
-                Usually 5–15 seconds
+                Usually 3–10 seconds
               </p>
               <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                 <div className="h-full w-2/5 animate-pulse rounded-full bg-gradient-to-r from-amber-500/40 via-amber-400 to-amber-500/40" />
@@ -349,7 +349,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
               <p className="mb-2 text-white/60">Generate your portrait before you buy — free to try</p>
               <p className="mb-5 max-w-sm text-xs leading-relaxed text-amber-200/75">
                 Fast light edit (typically{' '}
-                <strong className="font-semibold text-amber-200">5–15 seconds</strong>) — faces stay close to
+                <strong className="font-semibold text-amber-200">3–10 seconds</strong>) — faces stay close to
                 your photo. What you see is what you get after purchase.
               </p>
               <button

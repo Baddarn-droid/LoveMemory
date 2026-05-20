@@ -5,14 +5,14 @@ import type { CategoryId } from './styles'
 export type PortraitTier = 'preview' | 'standard'
 
 /**
- * Fast preview profile — pets AND family/couple, all 40 styles.
- * quality=low + 384px canvas + JPEG input = fastest generation, minimal face filtering.
+ * Ultra-fast preview — pets AND family/couple, all 40 styles.
+ * quality=low + 256px canvas + compressed JPEG = minimum processing time.
  */
 export const PORTRAIT_PREVIEW_CONFIG = {
   quality: 'low' as const,
-  canvasSize: 384,
+  canvasSize: 256,
   outputSize: '1024x1024' as const,
-  inputJpegQuality: 80,
+  inputJpegQuality: 65,
 }
 
 /** Purchased portraits use the same profile (WYSIWYG). */
@@ -32,14 +32,15 @@ export async function prepareSourceImage(
 ): Promise<{ buffer: Buffer; mimeType: 'image/jpeg'; filename: string }> {
   const needsTopPadding = category === 'pets' || category === 'family'
   const topPadding = Math.round(420 * (canvasSize / 1024))
-  const contentHeight = canvasSize - topPadding
+  const contentHeight = Math.max(64, canvasSize - topPadding)
+
+  const jpegOpts = { quality: jpegQuality, mozjpeg: true } as const
 
   let processed: Buffer
 
   if (needsTopPadding) {
     const resized = await sharp(buffer)
       .resize(canvasSize, contentHeight, { fit: 'inside', withoutEnlargement: true })
-      .png()
       .toBuffer()
     const meta = await sharp(resized).metadata()
     const w = meta.width ?? canvasSize
@@ -54,12 +55,12 @@ export async function prepareSourceImage(
         right: canvasSize - w - left,
         background: { r: 45, g: 42, b: 38 },
       })
-      .jpeg({ quality: jpegQuality, mozjpeg: true })
+      .jpeg(jpegOpts)
       .toBuffer()
   } else {
     processed = await sharp(buffer)
       .resize(canvasSize, canvasSize, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: jpegQuality, mozjpeg: true })
+      .jpeg(jpegOpts)
       .toBuffer()
   }
 
