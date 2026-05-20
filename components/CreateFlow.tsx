@@ -127,7 +127,6 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
       formData.append('prompt', prompt)
       formData.append('category', categoryId)
       formData.append('style', styleId)
-      formData.append('tier', 'preview')
       const apiBase = getApiBase()
       const res = await fetch(`${apiBase || ''}/api/generate-portrait`, { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))
@@ -278,7 +277,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
             <p className="mt-1 text-sm text-white/50">or click to browse</p>
             <p className="mt-4 text-xs text-white/30">JPG, PNG up to 10MB</p>
             <p className="mt-3 max-w-xs text-xs text-white/40">
-              After you upload, your free preview usually takes{' '}
+              After you upload, generating your portrait usually takes{' '}
               <span className="text-amber-200/80">15–30 seconds</span>.
             </p>
         </div>
@@ -328,7 +327,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
                     {' elapsed · '}
                   </>
                 ) : null}
-                Usually 15–30 seconds for preview
+                Usually 15–30 seconds
               </p>
               <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                 <div className="h-full w-2/5 animate-pulse rounded-full bg-gradient-to-r from-amber-500/40 via-amber-400 to-amber-500/40" />
@@ -346,11 +345,11 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
                   {generateError}
                 </div>
               )}
-              <p className="mb-2 text-white/60">Preview your portrait before you buy — free to generate</p>
+              <p className="mb-2 text-white/60">Generate your portrait before you buy — free to try</p>
               <p className="mb-5 max-w-sm text-xs leading-relaxed text-amber-200/75">
-                We generate a quick preview first (typically{' '}
-                <strong className="font-semibold text-amber-200">15–30 seconds</strong>). After checkout you
-                receive the full high-resolution version. Please stay on this page until the preview finishes.
+                This typically takes{' '}
+                <strong className="font-semibold text-amber-200">15–30 seconds</strong>. What you see is what you
+                get — the same portrait is delivered after purchase. Please stay on this page until it finishes.
               </p>
               <button
                 onClick={generatePortrait}
@@ -378,7 +377,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
             Your Masterpiece is Ready!
           </h2>
           <p className="mb-8 text-center text-sm text-white/45">
-            Preview quality — full high-resolution portrait unlocked after purchase
+            Watermarked preview — purchase to download without watermark
           </p>
 
           {/* Preview with watermark and edit buttons */}

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import Stripe from 'stripe'
-import { generatePortraitImage } from '@/lib/portraitGeneration'
 import { orderPaths, readOrderManifest, writeOrderManifest } from '@/lib/orderStorage'
 
 function getStripe(): Stripe | null {
@@ -13,12 +12,6 @@ function getStripe(): Stripe | null {
 const UUID_RE = /^[a-f0-9-]{36}$/i
 
 export async function POST(request: NextRequest) {
-  const rawKey = process.env.OPENAI_API_KEY
-  const apiKey = typeof rawKey === 'string' ? rawKey.trim() : ''
-  if (!apiKey) {
-    return NextResponse.json({ error: 'OpenAI API key is not configured.' }, { status: 500 })
-  }
-
   const stripe = getStripe()
   if (!stripe) {
     return NextResponse.json({ error: 'Stripe is not configured.' }, { status: 500 })
@@ -48,6 +41,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ status: 'ready', orderId })
   }
 
+  const paths = orderPaths(orderId)
+  if (!fs.existsSync(paths.preview)) {
+    return NextResponse.json({ error: 'Portrait file not found.' }, { status: 404 })
+  }
+
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId)
     if (session.payment_status !== 'paid') {
@@ -61,32 +59,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Could not verify payment.' }, { status: 400 })
   }
 
-  const paths = orderPaths(orderId)
-
-  try {
-    const sourceBuffer = fs.readFileSync(paths.source)
-    const b64 = await generatePortraitImage({
-      apiKey,
-      sourceBuffer,
-      prompt: manifest.prompt,
-      category: manifest.category,
-      tier: 'final',
-    })
-
-    fs.writeFileSync(paths.preview, Buffer.from(b64, 'base64'))
-    writeOrderManifest(orderId, { ...manifest, fulfilled: true })
-
-    return NextResponse.json({ status: 'ready', orderId })
-  } catch (err) {
-    console.error('fulfill-order generation error:', err)
-    return NextResponse.json(
-      {
-        error: err instanceof Error ? err.message : 'Full-quality generation failed.',
-        status: 'failed',
-      },
-      { status: 500 }
-    )
-  }
+  writeOrderManifest(orderId, { ...manifest, fulfilled: true })
+  return NextResponse.json({ status: 'ready', orderId })
 }
 
 /** Lightweight status check for success page polling */

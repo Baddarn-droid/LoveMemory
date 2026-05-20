@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Preview image is required.' }, { status: 400 })
     }
     if (!sourceImageB64 || typeof sourceImageB64 !== 'string') {
-      return NextResponse.json({ error: 'Original photo is required for full-quality delivery.' }, { status: 400 })
+      return NextResponse.json({ error: 'Original photo is required for order delivery.' }, { status: 400 })
     }
     if (!prompt || typeof prompt !== 'string') {
       return NextResponse.json({ error: 'Portrait prompt is required.' }, { status: 400 })

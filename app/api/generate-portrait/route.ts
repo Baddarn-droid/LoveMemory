@@ -16,7 +16,7 @@ import {
   FAMILY_EXACT_PEOPLE_COUNT,
   type CategoryId,
 } from '@/lib/styles'
-import { generatePortraitImage, type PortraitTier } from '@/lib/portraitGeneration'
+import { generatePortraitImage } from '@/lib/portraitGeneration'
 
 const DEFAULT_PROMPT = `${FACE_PRESERVATION}
 
@@ -25,11 +25,6 @@ ${FULL_FRAME_INSTRUCTION}
 Transform this photo into a beautiful, artistic portrait. Use soft professional lighting, elegant and timeless style. Make it look like a premium custom portrait — refined, high quality, and worthy of framing. Do not apply any filter or effect to faces; keep them identical to the original.`
 
 const VALID_CATEGORY_IDS: CategoryId[] = ['pets', 'family']
-
-function parseTier(raw: FormDataEntryValue | null): PortraitTier {
-  if (raw === 'final') return 'final'
-  return 'preview'
-}
 
 export async function POST(request: NextRequest) {
   const rawKey = process.env.OPENAI_API_KEY
@@ -53,8 +48,6 @@ export async function POST(request: NextRequest) {
   if (!file.type.startsWith('image/')) {
     return NextResponse.json({ error: 'File must be an image.' }, { status: 400 })
   }
-
-  const tier = parseTier(formData.get('tier'))
 
   const promptFromRequest = formData.get('prompt')
   let prompt: string
@@ -136,10 +129,9 @@ export async function POST(request: NextRequest) {
       sourceBuffer: buffer,
       prompt,
       category: categoryId,
-      tier,
     })
 
-    return NextResponse.json({ b64, tier })
+    return NextResponse.json({ b64 })
   } catch (err: unknown) {
     const rawMessage = err instanceof Error ? err.message : 'Image generation failed.'
     const isAuthError =

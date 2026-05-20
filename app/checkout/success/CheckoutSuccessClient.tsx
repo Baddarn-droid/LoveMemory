@@ -91,7 +91,7 @@ function FulfillmentSection({
         if (cancelled) return
 
         if (!res.ok) {
-          throw new Error(data.error || 'Could not prepare your full-resolution portrait.')
+          throw new Error(data.error || 'Could not confirm your order.')
         }
 
         setState('ready')
@@ -112,10 +112,8 @@ function FulfillmentSection({
     return (
       <div className="mt-8 flex max-w-md flex-col items-center text-center">
         <div className="mb-4 h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-emerald-400" />
-        <p className="text-base font-medium text-offwhite">Creating your full-resolution portrait…</p>
-        <p className="mt-2 text-sm text-offwhite/55">
-          This uses our highest quality settings and usually takes 30–60 seconds. Please keep this page open.
-        </p>
+        <p className="text-base font-medium text-offwhite">Confirming your order…</p>
+        <p className="mt-2 text-sm text-offwhite/55">Just a moment while we verify your payment.</p>
       </div>
     )
   }
@@ -134,7 +132,7 @@ function FulfillmentSection({
   if (option === 'download') {
     return (
       <div className="mt-6 text-center">
-        <p className="mb-4 text-offwhite/70">Your full-resolution portrait is ready to download.</p>
+        <p className="mb-4 text-offwhite/70">Your portrait is ready to download.</p>
         <a
           href={orderImageUrl}
           download={`portrait-${orderId}.png`}
@@ -153,7 +151,7 @@ function FulfillmentSection({
     return (
       <div className="mt-6 max-w-md text-center">
         <p className="text-offwhite/70">
-          Your print order has been received. You can also download your full-resolution portrait to print at home.
+          Your print order has been received. You can also download your portrait to print at home.
         </p>
         <a
           href={orderImageUrl}

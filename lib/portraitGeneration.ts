@@ -2,21 +2,21 @@ import OpenAI, { toFile } from 'openai'
 import sharp from 'sharp'
 import type { CategoryId } from './styles'
 
-export type PortraitTier = 'preview' | 'final'
-
-const TIER_CONFIG: Record<
-  PortraitTier,
-  { quality: 'low' | 'high'; canvasSize: number; outputSize: '1024x1024' }
-> = {
-  preview: { quality: 'low', canvasSize: 768, outputSize: '1024x1024' },
-  final: { quality: 'high', canvasSize: 1024, outputSize: '1024x1024' },
+/**
+ * Single generation profile for preview and purchased portraits.
+ * quality=low + smaller canvas keeps more likeness to the original photo.
+ */
+export const PORTRAIT_GENERATION_CONFIG = {
+  quality: 'low' as const,
+  canvasSize: 768,
+  outputSize: '1024x1024' as const,
 }
 
 /** Resize / pad the uploaded photo before sending to OpenAI */
 export async function prepareSourceImage(
   buffer: Buffer,
   category: CategoryId | null,
-  canvasSize: number
+  canvasSize: number = PORTRAIT_GENERATION_CONFIG.canvasSize
 ): Promise<Buffer> {
   const needsTopPadding = category === 'pets' || category === 'family'
   const topPadding = Math.round(420 * (canvasSize / 1024))
@@ -55,10 +55,9 @@ export async function generatePortraitImage(options: {
   sourceBuffer: Buffer
   prompt: string
   category: CategoryId | null
-  tier: PortraitTier
 }): Promise<string> {
-  const { apiKey, sourceBuffer, prompt, category, tier } = options
-  const config = TIER_CONFIG[tier]
+  const { apiKey, sourceBuffer, prompt, category } = options
+  const config = PORTRAIT_GENERATION_CONFIG
 
   const pngBuffer = await prepareSourceImage(sourceBuffer, category, config.canvasSize)
   const imageFile = await toFile(pngBuffer, 'image.png', { type: 'image/png' })
