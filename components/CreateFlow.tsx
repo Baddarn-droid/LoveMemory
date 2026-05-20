@@ -9,6 +9,31 @@ import { getApiBase } from '@/lib/apiBase'
 
 const ACCEPT = 'image/*'
 
+/** Shown while OpenAI paints the portrait — updates by elapsed seconds */
+const GENERATE_STATUS_STEPS: { afterSec: number; label: string }[] = [
+  { afterSec: 0, label: 'Sending your photo to the studio…' },
+  { afterSec: 4, label: 'Applying your chosen style…' },
+  { afterSec: 12, label: 'Painting fabrics, lighting, and background…' },
+  { afterSec: 25, label: 'Refining portrait details…' },
+  { afterSec: 45, label: 'Almost there — complex portraits can take up to a minute…' },
+  { afterSec: 70, label: 'Still working — thank you for your patience…' },
+]
+
+function getGenerateStatusMessage(elapsedSec: number): string {
+  let message = GENERATE_STATUS_STEPS[0].label
+  for (const step of GENERATE_STATUS_STEPS) {
+    if (elapsedSec >= step.afterSec) message = step.label
+  }
+  return message
+}
+
+function formatElapsed(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return s > 0 ? `${m}m ${s}s` : `${m}m`
+}
+
 type PetPose = 'standing' | 'laying'
 
 interface CreateFlowProps {
@@ -80,6 +105,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
   const [generatedPreviewUrl, setGeneratedPreviewUrl] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [generateElapsedSec, setGenerateElapsedSec] = useState(0)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
@@ -92,6 +118,16 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
       }
     }
   }, [uploadPreviewUrl, generatedPreviewUrl])
+
+  useEffect(() => {
+    if (!isGenerating) {
+      setGenerateElapsedSec(0)
+      return
+    }
+    setGenerateElapsedSec(0)
+    const id = setInterval(() => setGenerateElapsedSec((s) => s + 1), 1000)
+    return () => clearInterval(id)
+  }, [isGenerating])
 
   const handleFile = useCallback((file: File | null) => {
     if (!file || !file.type.startsWith('image/')) return
@@ -343,6 +379,10 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
             <p className="text-lg font-medium text-white">Drop your photo here</p>
             <p className="mt-1 text-sm text-white/50">or click to browse</p>
             <p className="mt-4 text-xs text-white/30">JPG, PNG up to 10MB</p>
+            <p className="mt-3 max-w-xs text-xs text-white/40">
+              After you upload, generating your portrait usually takes{' '}
+              <span className="text-amber-200/80">30–60 seconds</span>.
+            </p>
         </div>
         </motion.div>
       )}
@@ -373,10 +413,33 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
           </div>
 
           {isGenerating ? (
-            <div className="flex flex-col items-center">
+            <div
+              className="flex w-full max-w-md flex-col items-center rounded-2xl border border-amber-500/25 bg-amber-500/[0.06] px-6 py-8"
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+            >
               <div className="mb-4 h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-amber-400" />
-              <p className="text-white/70">Creating your Renaissance portrait...</p>
-              <p className="mt-1 text-sm text-white/40">This may take a moment</p>
+              <p className="text-base font-medium text-white">
+                {getGenerateStatusMessage(generateElapsedSec)}
+              </p>
+              <p className="mt-2 text-sm text-white/50">
+                {generateElapsedSec > 0 ? (
+                  <>
+                    <span className="tabular-nums text-amber-200/90">{formatElapsed(generateElapsedSec)}</span>
+                    {' elapsed · '}
+                  </>
+                ) : null}
+                Usually 30–60 seconds total
+              </p>
+              <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                <div className="h-full w-2/5 animate-pulse rounded-full bg-gradient-to-r from-amber-500/40 via-amber-400 to-amber-500/40" />
+              </div>
+              <ul className="mt-5 space-y-1.5 text-left text-xs text-white/45">
+                <li>Please keep this tab open while we work.</li>
+                <li>Do not refresh or go back — that can cancel the request.</li>
+                <li>First generation after a while may take a little longer.</li>
+              </ul>
             </div>
           ) : (
             <>
@@ -385,10 +448,16 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
                   {generateError}
                 </div>
               )}
-              <p className="mb-4 text-white/60">Preview your portrait before you buy — free to generate</p>
+              <p className="mb-2 text-white/60">Preview your portrait before you buy — free to generate</p>
+              <p className="mb-5 max-w-sm text-xs leading-relaxed text-amber-200/75">
+                When you click generate, our AI studio paints your portrait. This typically takes{' '}
+                <strong className="font-semibold text-amber-200">30–60 seconds</strong>. Please stay on
+                this page until it finishes.
+              </p>
               <button
                 onClick={generatePortrait}
-                className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-8 py-4 text-base font-semibold text-black transition-all hover:bg-amber-400 hover:shadow-lg hover:shadow-amber-500/25"
+                disabled={isGenerating}
+                className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-8 py-4 text-base font-semibold text-black transition-all hover:bg-amber-400 hover:shadow-lg hover:shadow-amber-500/25 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
