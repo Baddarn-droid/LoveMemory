@@ -3,7 +3,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getCategoryBySlug, getStylePreset, getStyleTagline, CATEGORY_SLUGS, getAllStyleIdsForCategory } from '@/lib/styles'
 import { getExampleImages } from '@/lib/exampleImages'
-import { RenaissanceFlow } from '@/components/RenaissanceFlow'
 import { CreateFlow } from '@/components/CreateFlow'
 
 export function generateStaticParams() {
@@ -135,12 +134,8 @@ export default async function StylePage({ params }: { params: Promise<{ category
           </div>
         </div>
 
-        {/* Create section — Renaissance gets pose/clothing options; other styles use CreateFlow directly */}
-        {style.id === 'renaissance' ? (
-          <RenaissanceFlow categoryId={category.id} styleId={style.id} />
-        ) : (
-          <CreateFlow categoryId={category.id} styleId={style.id} />
-        )}
+        {/* Create section */}
+        <CreateFlow categoryId={category.id} styleId={style.id} />
       </div>
     </div>
   )

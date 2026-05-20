@@ -60,14 +60,13 @@ function OptionButton({ selected, onClick, children }: { selected: boolean; onCl
   )
 }
 
-export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingChoices: clothingChoicesProp }: CreateFlowProps) {
+export function CreateFlow({ categoryId, styleId, subStyleId, petPose: _petPoseProp, clothingChoices: _clothingChoicesProp }: CreateFlowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [internalPetPose, setInternalPetPose] = useState<PetPose>('standing')
-  const effectivePetPose = categoryId === 'pets' ? (petPose ?? internalPetPose) : petPose
-  const showPetPoseSelector = categoryId === 'pets' && petPose === undefined
+  const [petPose, setPetPose] = useState<PetPose>('standing')
+  const effectivePetPose = categoryId === 'pets' ? petPose : undefined
 
   const clothingOptions = CLOTHING_OPTIONS[categoryId] ?? []
-  const [internalClothingChoices, setInternalClothingChoices] = useState<Record<string, string>>(() =>
+  const [clothingChoices, setClothingChoices] = useState<Record<string, string>>(() =>
     clothingOptions.reduce(
       (acc, opt) => {
         acc[opt.id] = opt.choices[0]?.id ?? ''
@@ -76,16 +75,16 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
       {} as Record<string, string>
     )
   )
-  const effectiveClothingChoices = clothingChoicesProp ?? internalClothingChoices
-  /** Clothing UI lives in RenaissanceFlow only — avoid silent Renaissance defaults on other styles */
-  const showClothingSelectors = false
+
+  const isRenaissanceStyle = styleId === 'renaissance'
+  const showColourPalette = isRenaissanceStyle
+  const showPetPoseSelector = categoryId === 'pets'
+  const showClothingSelectors = isRenaissanceStyle && clothingOptions.length > 0
 
   const [colourOptionId, setColourOptionId] = useState(COLOUR_OPTIONS[0]?.id ?? 'crimson-gold')
-  /** Colour picker only on Renaissance — era styles carry colours in their prompt */
-  const showColourPalette = styleId === 'renaissance'
 
   useEffect(() => {
-    setInternalClothingChoices(
+    setClothingChoices(
       clothingOptions.reduce(
         (acc, opt) => {
           acc[opt.id] = opt.choices[0]?.id ?? ''
@@ -97,7 +96,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
   }, [categoryId])
 
   const handleClothingChange = (optionId: string, choiceId: string) => {
-    setInternalClothingChoices((prev) => ({ ...prev, [optionId]: choiceId }))
+    setClothingChoices((prev) => ({ ...prev, [optionId]: choiceId }))
   }
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null)
@@ -173,7 +172,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
         subStyleId,
         colourOptionId: showColourPalette ? colourOptionId : undefined,
         petPose: effectivePetPose,
-        clothingChoices: clothingChoicesProp,
+        clothingChoices: showClothingSelectors ? clothingChoices : undefined,
       })
       lastPromptRef.current = prompt
       const formData = new FormData()
@@ -229,7 +228,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
           subStyleId,
           colourOptionId: showColourPalette ? colourOptionId : undefined,
           petPose: effectivePetPose,
-          clothingChoices: clothingChoicesProp,
+          clothingChoices: showClothingSelectors ? clothingChoices : undefined,
         })
       const apiBase = getApiBase()
       const prep = await fetch(`${apiBase}/api/prepare-checkout`, {
@@ -322,24 +321,24 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
         </div>
       )}
 
-      {/* Pet pose selector - shown for all pet styles when not inside RenaissanceFlow */}
+      {/* Pet pose — all pet styles */}
       {showPetPoseSelector && (
         <div className="mb-8">
           <h3 className="mb-4 text-sm font-medium uppercase tracking-widest text-white/40">
             Pet Pose
           </h3>
           <div className="flex flex-wrap gap-3">
-            <OptionButton selected={internalPetPose === 'standing'} onClick={() => setInternalPetPose('standing')}>
+            <OptionButton selected={petPose === 'standing'} onClick={() => setPetPose('standing')}>
               Standing
             </OptionButton>
-            <OptionButton selected={internalPetPose === 'laying'} onClick={() => setInternalPetPose('laying')}>
+            <OptionButton selected={petPose === 'laying'} onClick={() => setPetPose('laying')}>
               Laying on a pillow
             </OptionButton>
           </div>
         </div>
       )}
 
-      {/* Headwear & Cape - shown for all pet styles when not inside RenaissanceFlow */}
+      {/* Headwear & cape — Renaissance pet/family styles */}
       {showClothingSelectors && (
         <div className="mb-8 space-y-8">
           {clothingOptions.map((opt) => (
@@ -351,7 +350,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
                 {opt.choices.map((choice) => (
                   <OptionButton
                     key={choice.id}
-                    selected={effectiveClothingChoices[opt.id] === choice.id}
+                    selected={clothingChoices[opt.id] === choice.id}
                     onClick={() => handleClothingChange(opt.id, choice.id)}
                   >
                     {choice.label}
