@@ -5,14 +5,14 @@ import type { CategoryId } from './styles'
 export type PortraitTier = 'preview' | 'standard'
 
 /**
- * Ultra-fast preview — pets AND family/couple, all 40 styles.
- * quality=low + 256px canvas + compressed JPEG = minimum processing time.
+ * Fast preview — slightly higher quality; quality=low keeps faces unfiltered.
+ * Same profile for preview + purchase (WYSIWYG).
  */
 export const PORTRAIT_PREVIEW_CONFIG = {
   quality: 'low' as const,
-  canvasSize: 256,
+  canvasSize: 384,
   outputSize: '1024x1024' as const,
-  inputJpegQuality: 65,
+  inputJpegQuality: 78,
 }
 
 /** Purchased portraits use the same profile (WYSIWYG). */

@@ -23,6 +23,9 @@ import {
   FAMILY_EXACT_PEOPLE_COUNT,
   FAMILY_FACE_IDENTITY_FIRST,
   FAMILY_FACE_IDENTITY_EMPHASIS,
+  NO_FILTER_FACE,
+  PERIOD_CLOTHING_FIT,
+  PET_COLLAR_FIT,
   type CategoryId,
 } from './styles'
 
@@ -37,6 +40,7 @@ function buildIdentityPrefix(categoryId: CategoryId): string {
   if (categoryId === 'pets') {
     return [
       PET_FACE_IDENTITY_FIRST,
+      NO_FILTER_FACE,
       FACE_PRESERVATION,
       LIGHT_TOUCH_EDIT,
       PET_COMPOSITION_FIRST,
@@ -44,6 +48,7 @@ function buildIdentityPrefix(categoryId: CategoryId): string {
   }
   return [
     FAMILY_FACE_IDENTITY_FIRST,
+    NO_FILTER_FACE,
     FACE_PRESERVATION,
     LIGHT_TOUCH_EDIT,
     FAMILY_EXACT_PEOPLE_COUNT,
@@ -65,7 +70,7 @@ function buildIdentitySuffix(categoryId: CategoryId): string {
       FAMILY_FACE_IDENTITY_EMPHASIS
     )
   }
-  parts.push(FACE_PRESERVATION_EMPHASIS, LIGHT_TOUCH_EDIT)
+  parts.push(FACE_PRESERVATION_EMPHASIS, NO_FILTER_FACE, LIGHT_TOUCH_EDIT)
   return parts.join('\n\n')
 }
 
@@ -122,6 +127,11 @@ export function buildPortraitPrompt(options: {
   if (categoryId && clothingChoices && Object.keys(clothingChoices).length > 0) {
     prompt = prompt + getClothingPromptText(categoryId, clothingChoices)
   }
+
+  prompt =
+    prompt +
+    '\n\n' +
+    (categoryId === 'family' ? PERIOD_CLOTHING_FIT : PET_COLLAR_FIT)
 
   prompt = prompt + '\n\n' + buildIdentitySuffix(categoryId)
   return prompt

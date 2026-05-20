@@ -78,6 +78,25 @@ STYLE: Vibrant painterly look, bold visible brushstrokes. Soft pastels, rich col
   },
 ]
 
+/** Absolute no-filter rule — both pets and people, every style */
+export const NO_FILTER_FACE = `ZERO FILTERS ON FACES (mandatory — all categories):
+- Faces must look like unedited photographs: raw, sharp, natural — NOT retouched or beautified
+- Preserve natural skin/fur texture: pores, fine lines, natural shadows, real imperfections, exact tone from the upload
+- FORBIDDEN on any face: beauty filter, skin smoothing, airbrush, soft glow, porcelain skin, glamour retouch, makeup enhancement, Instagram/Snapchat filter, painterly or soft-focus skin`
+
+/** Correct period clothing layering — prevents tie/cravat outside shirt */
+export const PERIOD_CLOTHING_FIT = `CLOTHING FIT & LAYERING (mandatory for people):
+- Cravats, neckties, and ascots must be worn INSIDE the shirt collar — knotted at the neck with collar points properly over the neckwear
+- NEVER place a tie, cravat, or bow tie floating OUTSIDE or ON TOP of an open shirt collar — that is incorrect
+- Dress shirts buttoned correctly at the collar when formal neckwear is worn; waistcoat and jacket lapels sit naturally over the shirt
+- Ruffs and lace collars encircle the neckline at the base of the neck — integrated with the garment, not floating detached on top of the shirt
+- All clothing must look physically correct: no impossible layering, no accessories clipping through fabric`
+
+/** Pet costume/collar placement */
+export const PET_COLLAR_FIT = `COLLAR & COSTUME FIT (mandatory for pets):
+- Collars, capes, and costumes sit around neck/chest only — never covering eyes, muzzle, nose, or ears
+- Accessories must attach naturally; no floating elements through fur`
+
 /** Shared light-touch generation instruction — applies to pets and family on every style */
 export const LIGHT_TOUCH_EDIT = `LIGHT TOUCH EDIT (all categories, preview and purchase):
 - Minimal processing — subtle edit only; preserve likeness of every subject
@@ -99,7 +118,8 @@ export const PET_FACE_IDENTITY_FIRST = `HIGHEST PRIORITY — PET IDENTITY. The o
 
 FACE & HEAD — must match the upload exactly:
 - Same eyes, nose, muzzle, whiskers, expression, ear shape, markings, and fur colour/pattern on the face
-- Photorealistic — sharp, clear, unfiltered. NO oil paint, brushstrokes, soft focus, or beautification on the face or head fur
+- Photorealistic — sharp, clear, completely unfiltered. NO oil paint, brushstrokes, soft focus, smoothing, or beautification on the face or head fur
+- Natural fur texture with real detail — like a sharp photograph, not a soft illustration
 - Treat the pet's face as a photograph composited unchanged — do NOT repaint the face
 
 BODY FUR — preserve exact coat colour, pattern, and markings from the original photo
@@ -116,7 +136,8 @@ export const FAMILY_FACE_IDENTITY_FIRST = `HIGHEST PRIORITY — IDENTITY (HUMANS
 
 FACE — must match the upload exactly:
 - Same face shape, jaw, cheeks, forehead, chin, eye shape and colour, nose, mouth, lips, eyebrows, skin tone, freckles, moles, wrinkles, and expression
-- Photorealistic skin — sharp, clear, unfiltered. NO oil paint, brushstrokes, soft focus, smoothing, beautification, or "portrait painting" effect on any face
+- Photorealistic skin — sharp, clear, completely unfiltered. NO oil paint, brushstrokes, soft focus, smoothing, beautification, glamour retouch, or "portrait painting" effect on any face
+- Natural skin texture with pores and real shadows — like a DSLR photo, not a magazine cover
 - Treat each face as a photograph composited unchanged onto the styled portrait — do NOT repaint faces
 
 HAIR — must match the upload exactly:
@@ -332,7 +353,7 @@ export const STYLE_GROUPS: StyleGroup[] = [
       { id: 'baroque-royal', title: 'Baroque Royal Portrait', description: 'Rich velvet drapes, golden baroque frames.', searchKeywords: ['baroque', 'royal', 'velvet', 'golden'], promptText: eraStylePrompt('Baroque royal portrait (17th-century European court)', 'Transform into Baroque royal portrait. Rich crimson or deep velvet, golden brocade trim, white lace collars or modest ruffs appropriate to the 1600s. Opulent, dramatic court lighting. Dark or draped background. Replace clothing and background only.', ['Victorian 19th-century dress', 'Renaissance 15th–16th century Florentine style', 'Rococo pastels', 'modern clothing']) },
       { id: 'rococo-elegance', title: 'Rococo Elegance', description: 'Vibrant painterly style with bold brushstrokes.', searchKeywords: ['rococo', 'elegance', 'pastels', 'french court'], promptText: eraStylePrompt('Rococo portrait (18th-century French court)', 'Transform into Rococo portrait. Pale silk, pink satin, cream brocade, soft pastels, playful ornate details. Light, airy, decorative 18th-century French court aesthetic. Replace clothing and background only.', ['Victorian dark formal wear', 'Renaissance doublets and Tudor ruffs', 'Baroque heavy velvet', 'modern clothing']) },
       { id: 'victorian-era', title: 'Victorian Era Portrait', description: 'Formal Victorian period style.', searchKeywords: ['victorian', 'era', 'formal', '19th century'], promptText: eraStylePrompt('Victorian era portrait (19th century, c. 1837–1901)', `Transform into a formal Victorian-era oil portrait or cabinet photograph aesthetic.
-CLOTHING: 19th-century formal dress — dark wool, velvet, or silk; high necklines; frock coats for men; modest bustled or period silhouettes for women; muted palette (black, navy, deep burgundy, brown, charcoal). Simple lace at collar if any — NOT large Elizabethan ruffs.
+CLOTHING: 19th-century formal dress — dark wool, velvet, or silk; high necklines; frock coats for men; modest bustled or period silhouettes for women; muted palette (black, navy, deep burgundy, brown, charcoal). Simple lace at collar if any — NOT large Elizabethan ruffs. Men's cravats or neckties worn INSIDE the shirt collar, knotted at the neck — never floating outside the collar.
 BACKGROUND: Moody studio backdrop, dark interior, or subtle Victorian parlour — not golden Renaissance halos or Baroque theatre drapes.
 MOOD: Restrained, dignified, photographic or academic oil portrait of the Victorian period.
 Replace clothing and background only; keep faces photographic.`, ['Renaissance 15th–16th century dress', 'Elizabethan ruffs and doublets', 'gold brocade Renaissance sleeves', 'feathered Tudor caps', 'Baroque opulent crimson court', 'Rococo pastels']) },
@@ -504,9 +525,9 @@ export const CLOTHING_OPTIONS: Record<CategoryId, ClothingOption[]> = {
       id: 'collar',
       label: 'Collars & ruffs',
       choices: [
-        { id: 'ruffs', label: 'Elaborate ruffs', promptText: 'Add elaborate white ruffled ruffs at the neckline only — do not cover or alter faces or hair.' },
-        { id: 'lace', label: 'Simple lace collars', promptText: 'Add simple lace collars at the neckline only — faces and hair unchanged.' },
-        { id: 'open', label: 'Open neck', promptText: 'Open neckline — faces and hair remain exactly as in the original photo.' },
+        { id: 'ruffs', label: 'Elaborate ruffs', promptText: 'Add elaborate white ruffled ruffs encircling the neckline at the base of the neck — worn properly with the shirt, not floating outside the collar.' },
+        { id: 'lace', label: 'Simple lace collars', promptText: 'Add simple lace collars at the neckline, integrated under the shirt collar — faces unchanged, no tie outside the shirt.' },
+        { id: 'open', label: 'Open neck', promptText: 'Open neckline with no tie or cravat — shirt collar open naturally, faces and hair exactly as in the original photo.' },
       ],
     },
   ],
