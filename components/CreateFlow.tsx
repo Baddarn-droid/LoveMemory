@@ -279,7 +279,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
             <p className="mt-4 text-xs text-white/30">JPG, PNG up to 10MB</p>
             <p className="mt-3 max-w-xs text-xs text-white/40">
               Generation usually takes{' '}
-              <span className="text-amber-200/80">15–35 seconds</span> — theme only, no filters on the whole image.
+              <span className="text-amber-200/80">15–35 seconds</span> — period theme on clothes and background.
             </p>
         </div>
         </motion.div>
@@ -350,7 +350,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
               <p className="mb-5 max-w-sm text-xs leading-relaxed text-amber-200/75">
                 Fast light edit (typically{' '}
                 <strong className="font-semibold text-amber-200">15–35 seconds</strong>) — period theme on clothes
-                and background, whole image stays an unfiltered photo.
+                and background. What you see is what you get after purchase.
               </p>
               <button
                 onClick={generatePortrait}

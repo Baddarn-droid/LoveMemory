@@ -1,21 +1,19 @@
 import OpenAI, { toFile } from 'openai'
 import sharp from 'sharp'
 import type { CategoryId } from './styles'
-
-/** Applies to every portrait — pets and family, all 40+ style routes. Do not bypass. */
-export const UNFILTERED_PIPELINE_APPLIES_TO: readonly CategoryId[] = ['pets', 'family'] as const
 import {
-  buildEditMask,
   finishUnfilteredThemedPortrait,
   type PreparedPortraitImage,
   type SubjectRect,
 } from './facePreservation'
 
+/** Applies to every portrait — pets and family, all 40+ style routes. Do not bypass. */
+export const UNFILTERED_PIPELINE_APPLIES_TO: readonly CategoryId[] = ['pets', 'family'] as const
+
 export type PortraitTier = 'preview' | 'standard'
 
 /**
- * Theme-only portraits: input_fidelity=high + face mask + whole-image photoreal finish.
- * Post-processing restores original photo detail across the entire frame — no filters.
+ * Theme-only portraits: input_fidelity=high + photoreal prompts (no source-photo overlay).
  */
 export const PORTRAIT_PREVIEW_CONFIG = {
   quality: 'medium' as const,
@@ -32,7 +30,7 @@ const TIER_CONFIG: Record<PortraitTier, typeof PORTRAIT_PREVIEW_CONFIG> = {
   standard: PORTRAIT_STANDARD_CONFIG,
 }
 
-/** Resize / pad the uploaded photo — returns subject bounds for face masking */
+/** Resize / pad the uploaded photo before sending to OpenAI */
 export async function prepareSourceImage(
   buffer: Buffer,
   category: CategoryId | null,
@@ -108,14 +106,10 @@ export async function generatePortraitImage(options: {
   const prepared = await prepareSourceImage(sourceBuffer, category, config.canvasSize)
   const imageFile = await toFile(prepared.buffer, 'image.png', { type: 'image/png' })
 
-  const maskBuffer = await buildEditMask(prepared.size, prepared.subjectRect, category)
-  const maskFile = await toFile(maskBuffer, 'mask.png', { type: 'image/png' })
-
   const openai = new OpenAI({ apiKey })
   const editParams: ImageEditWithFidelity = {
     model: 'gpt-image-1.5',
     image: [imageFile],
-    mask: maskFile,
     prompt,
     size: config.outputSize,
     quality: config.quality,
@@ -140,10 +134,6 @@ export async function generatePortraitImage(options: {
     throw new Error('Unexpected response from OpenAI.')
   }
 
-  // Universal post-process: theme from AI + unfiltered photo finish (pets + family, all styles)
-  if (!UNFILTERED_PIPELINE_APPLIES_TO.includes(category as CategoryId) && category !== null) {
-    console.warn('generatePortraitImage: unknown category — still applying unfiltered finish')
-  }
   return finishUnfilteredThemedPortrait({
     generatedB64,
     sourcePrepared: prepared,
