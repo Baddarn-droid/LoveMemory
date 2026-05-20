@@ -64,6 +64,9 @@ export function PortraitCustomizer({ categoryId, styleTitle, options, onChange }
       <div className="mb-8 text-center">
         <h2 className="text-sm font-medium uppercase tracking-widest text-white/50">Customize your portrait</h2>
         <p className="mt-2 text-xs text-white/40">{styleTitle} · adjust options before you upload</p>
+        <p className="mt-1 text-xs text-white/35">
+          Fast light edit for {isPets ? 'pets' : 'people'} — faces stay close to your photo
+        </p>
       </div>
 
       {isPets && (

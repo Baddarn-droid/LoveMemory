@@ -6,7 +6,8 @@ export type PortraitTier = 'preview' | 'standard'
 
 /**
  * Preview profile — fastest generation, least face “filtering”, best likeness.
- * quality=low + small canvas = less AI repainting of faces.
+ * Used identically for pets AND family/couple on all 40 style pages.
+ * quality=low + 512px canvas = less AI repainting of faces/fur.
  */
 export const PORTRAIT_PREVIEW_CONFIG = {
   quality: 'low' as const,

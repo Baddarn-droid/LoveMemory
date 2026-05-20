@@ -78,14 +78,38 @@ STYLE: Vibrant painterly look, bold visible brushstrokes. Soft pastels, rich col
   },
 ]
 
+/** Shared light-touch generation instruction — applies to pets and family on every style */
+export const LIGHT_TOUCH_EDIT = `LIGHT TOUCH EDIT (all categories, preview and purchase):
+- Minimal processing — subtle edit only; preserve likeness of every subject
+- Change clothing, accessories, and background to match the selected style
+- Keep faces, hair, and fur on the head as untouched photographs from the original upload
+- NO heavy filters, NO painterly face effects, NO beauty smoothing, NO airbrush`
+
 /** Base instruction for face preservation — no filters; maximum recognizability for pets and humans */
 export const FACE_PRESERVATION = `CRITICAL - FACE PRESERVATION (NO FILTERS):
 - Keep every face (person or animal) COMPLETELY recognizable — identical to the original photo. Faces must look like real photographs, not paintings.
-- Do NOT apply any filter, blur, softening, airbrush, beauty filter, oil painting texture, or artistic effect to the face, skin, or hair.
-- Preserve all facial features, expressions, skin texture, pores, and likeness exactly as they appear — zero stylization on the face
-- Preserve hairstyle exactly: same hair colour, length, cut, texture, volume, parting, and bangs as the original photo
-- Apply the artistic style to clothing, background, and surroundings only; leave all faces and hair photographically clear and unchanged
-- Do NOT change face shape, features, bone structure, or appearance. The person must instantly recognize themselves`
+- Do NOT apply any filter, blur, softening, airbrush, beauty filter, oil painting texture, or artistic effect to the face, skin, fur, or hair.
+- Preserve all facial features, expressions, skin/fur texture, markings, and likeness exactly as they appear — zero stylization on the face
+- For people: preserve hairstyle exactly (colour, length, cut, texture, parting). For pets: preserve fur colour, pattern, and markings on the face exactly
+- Apply the artistic style to clothing, background, and surroundings only; leave all faces photographically clear and unchanged
+- Do NOT change face shape, features, or appearance. The customer must instantly recognize themselves or their pet`
+
+/** Pet portraits: identity lock — must be first in prompt */
+export const PET_FACE_IDENTITY_FIRST = `HIGHEST PRIORITY — PET IDENTITY. The owner MUST instantly recognize their pet. This overrides all artistic style instructions below.
+
+FACE & HEAD — must match the upload exactly:
+- Same eyes, nose, muzzle, whiskers, expression, ear shape, markings, and fur colour/pattern on the face
+- Photorealistic — sharp, clear, unfiltered. NO oil paint, brushstrokes, soft focus, or beautification on the face or head fur
+- Treat the pet's face as a photograph composited unchanged — do NOT repaint the face
+
+BODY FUR — preserve exact coat colour, pattern, and markings from the original photo
+- Optional costume, collar, or cape on the body only — never covering or repainting the face
+- Headwear may sit ON TOP of ears/fur only — do not replace or paint over the head
+
+ONLY stylize: decorative clothing/collars (away from face), cushion, background, and scene.`
+
+/** Repeated at end of pet prompts */
+export const PET_FACE_IDENTITY_EMPHASIS = `FINAL REMINDER — PET IDENTITY: Face, fur, markings, and expression must match the upload — photorealistic, zero filters. The owner must recognize their pet instantly. Style applies to costume and background ONLY.`
 
 /** Family/couple: identity lock — must be first in prompt for human portraits */
 export const FAMILY_FACE_IDENTITY_FIRST = `HIGHEST PRIORITY — IDENTITY (HUMANS). The customer MUST instantly recognize every person as themselves. This overrides all artistic style instructions below.
@@ -154,11 +178,11 @@ ADD RENAISSANCE ELEMENTS (clothing and background only — never faces or hair):
 - Use rich fabrics: velvet, silk, brocade on garments only
 - Add a classical background (colors and style from chosen sub-style)
 
-ARTISTIC STYLE:
-- Classical oil painting technique with visible brushwork
-- Use the exact color palette specified in the sub-style for clothing, jewelry, and background
-- Museum-quality, gallery-worthy composition
-- Dignified, noble pose`
+ARTISTIC STYLE (background and clothing only — never faces, fur, or hair):
+- Subtle painterly background and garments; faces remain photographic
+- Use the exact color palette specified for clothing, jewelry, and background
+- Gallery-worthy composition
+- Natural, dignified pose`
 
 export const CATEGORIES: CategoryConfig[] = [
   {
@@ -175,10 +199,10 @@ export const CATEGORIES: CategoryConfig[] = [
         promptText: `${RENAISSANCE_BASE}
 
 FOR PETS SPECIFICALLY:
-- Keep the pet's face and features completely recognizable
-- Dress the pet in miniature Renaissance royal attire or place on luxurious velvet cushions with gold tassels
-- Add a small jeweled collar or decorative accessories appropriate for nobility
-- Position on ornate furniture or with rich fabric draping`,
+- Face and fur on the head must remain photorealistic and identical to the upload
+- Dress the pet in miniature attire or place on velvet cushions — clothing/cape on body only, not over the face
+- Small jeweled collar at neck only if chosen — never obscuring the face
+- Position on ornate furniture or rich fabric draping in the background`,
       },
     ],
   },
@@ -452,17 +476,17 @@ export const CLOTHING_OPTIONS: Record<CategoryId, ClothingOption[]> = {
       id: 'headwear',
       label: 'Headwear',
       choices: [
-        { id: 'hat', label: 'Feathered cap or crown', promptText: 'Add an elaborate feathered cap or small jeweled crown to the pet.' },
-        { id: 'headband', label: 'Pearl headband', promptText: 'Add a delicate pearl headband to the pet.' },
-        { id: 'none', label: 'No headwear', promptText: 'No headwear on the pet.' },
+        { id: 'hat', label: 'Feathered cap or crown', promptText: 'Add a small feathered cap or crown ON TOP of the pet\'s head — do not cover or alter the face, eyes, or muzzle.' },
+        { id: 'headband', label: 'Pearl headband', promptText: 'Add a pearl headband ON TOP of existing fur — preserve exact face and markings.' },
+        { id: 'none', label: 'No headwear', promptText: 'No headwear. Keep the pet\'s face and head fur exactly as in the photo.' },
       ],
     },
     {
       id: 'cape',
       label: 'Cape or robe',
       choices: [
-        { id: 'yes', label: 'Velvet cape', promptText: 'Dress the pet in a flowing velvet cape or regal robe.' },
-        { id: 'no', label: 'No cape', promptText: 'No cape or robe, just the main attire.' },
+        { id: 'yes', label: 'Velvet cape', promptText: 'Add a velvet cape on the body/shoulders only — face and head fur unchanged.' },
+        { id: 'no', label: 'No cape', promptText: 'No cape — face, fur, and markings remain exactly as in the original photo.' },
       ],
     },
   ],

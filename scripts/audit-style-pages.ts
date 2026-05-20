@@ -41,4 +41,5 @@ if (errors) {
   console.error(`\n${errors} error(s)`)
   process.exit(1)
 }
-console.log('\nAll routes map to [category]/[style]/page.tsx → StyleCreateSection → PortraitCustomizer')
+console.log('\nAll routes use StyleCreateSection → PortraitCustomizer → CreateFlow')
+console.log('Generation: quality=low, 512px canvas — same for pets and family on every style')
