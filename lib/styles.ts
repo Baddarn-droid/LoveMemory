@@ -386,6 +386,12 @@ export interface ColourOption {
 }
 
 export const COLOUR_OPTIONS: ColourOption[] = [
+  {
+    id: 'style-default',
+    label: 'Style default',
+    promptText: '',
+    colors: ['#4A4A4A', '#6B6B6B', '#8A8A8A', '#ABABAB', '#CCCCCC'],
+  },
   { id: 'crimson-gold', label: 'Crimson & Gold', promptText: 'Use a colour palette of deep crimson red and rich gold for clothing, robes, and background. Velvet and brocade in these tones. Golden jewellery and trim.', colors: ['#8B0000', '#B8860B', '#D4AF37', '#FFFFFF', '#2C2C2C'] },
   { id: 'navy-silver', label: 'Navy & Silver', promptText: 'Use a colour palette of deep navy blue and silver for clothing and background. Silver jewellery, grey silk accents. Cool, elegant tones.', colors: ['#1A2A4A', '#4A5568', '#9CA3AF', '#E5E7EB', '#374151'] },
   { id: 'burgundy-cream', label: 'Burgundy & Cream', promptText: 'Use a colour palette of burgundy and cream for clothing and background. Cream lace, burgundy velvet. Warm, classic tones.', colors: ['#722F37', '#8B4513', '#FFF8E7', '#F5F5DC', '#2C2C2C'] },
@@ -397,9 +403,16 @@ export const COLOUR_OPTIONS: ColourOption[] = [
 ]
 
 export function getColourPromptText(colourOptionId: string | undefined): string {
-  if (!colourOptionId) return ''
+  if (!colourOptionId || colourOptionId === 'style-default') return ''
   const opt = COLOUR_OPTIONS.find((c) => c.id === colourOptionId)
-  return opt ? `\n\nCOLOUR PALETTE: ${opt.promptText}` : ''
+  return opt?.promptText ? `\n\nCOLOUR PALETTE: ${opt.promptText}` : ''
+}
+
+/** Neutral defaults — only applied when user leaves options unchanged */
+export function getDefaultClothingChoices(categoryId: CategoryId): Record<string, string> {
+  if (categoryId === 'pets') return { headwear: 'none', cape: 'no' }
+  if (categoryId === 'family') return { headwear: 'none', collar: 'open' }
+  return {}
 }
 
 /** Clothing/accessory options per category */

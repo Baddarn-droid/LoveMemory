@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import type { CategoryId } from '@/lib/styles'
-import { CLOTHING_OPTIONS, COLOUR_OPTIONS } from '@/lib/styles'
+import { CLOTHING_OPTIONS, COLOUR_OPTIONS, getDefaultClothingChoices } from '@/lib/styles'
 import { buildPortraitPrompt } from '@/lib/buildPortraitPrompt'
 import { getApiBase } from '@/lib/apiBase'
 
@@ -67,32 +67,18 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose: _petPoseP
 
   const clothingOptions = CLOTHING_OPTIONS[categoryId] ?? []
   const [clothingChoices, setClothingChoices] = useState<Record<string, string>>(() =>
-    clothingOptions.reduce(
-      (acc, opt) => {
-        acc[opt.id] = opt.choices[0]?.id ?? ''
-        return acc
-      },
-      {} as Record<string, string>
-    )
+    getDefaultClothingChoices(categoryId)
   )
 
-  const isRenaissanceStyle = styleId === 'renaissance'
-  const showColourPalette = isRenaissanceStyle
+  /** Customisation available on every style page for pets and family */
+  const showColourPalette = true
   const showPetPoseSelector = categoryId === 'pets'
-  const showClothingSelectors = isRenaissanceStyle && clothingOptions.length > 0
+  const showClothingSelectors = clothingOptions.length > 0
 
-  const [colourOptionId, setColourOptionId] = useState(COLOUR_OPTIONS[0]?.id ?? 'crimson-gold')
+  const [colourOptionId, setColourOptionId] = useState('style-default')
 
   useEffect(() => {
-    setClothingChoices(
-      clothingOptions.reduce(
-        (acc, opt) => {
-          acc[opt.id] = opt.choices[0]?.id ?? ''
-          return acc
-        },
-        {} as Record<string, string>
-      )
-    )
+    setClothingChoices(getDefaultClothingChoices(categoryId))
   }, [categoryId])
 
   const handleClothingChange = (optionId: string, choiceId: string) => {
@@ -277,9 +263,12 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose: _petPoseP
     <div id="create" className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 md:p-10">
       {showColourPalette && (
         <div className="mb-10">
-          <h3 className="mb-6 text-center text-sm font-medium uppercase tracking-widest text-white/50">
+          <h3 className="mb-2 text-center text-sm font-medium uppercase tracking-widest text-white/50">
             Choose your colour palette
           </h3>
+          <p className="mb-6 text-center text-xs text-white/40">
+            Optional — &ldquo;Style default&rdquo; keeps colours from your chosen art style
+          </p>
           <div className="space-y-4">
             {COLOUR_OPTIONS.map((opt) => {
               const isSelected = colourOptionId === opt.id
