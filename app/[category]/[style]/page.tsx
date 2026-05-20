@@ -135,13 +135,9 @@ export default async function StylePage({ params }: { params: Promise<{ category
           </div>
         </div>
 
-        {/* Create section */}
-        {style.subStyles && style.subStyles.length > 0 ? (
-          <RenaissanceFlow
-            categoryId={category.id}
-            styleId={style.id}
-            subStyles={style.subStyles}
-          />
+        {/* Create section — Renaissance gets pose/clothing options; other styles use CreateFlow directly */}
+        {style.id === 'renaissance' ? (
+          <RenaissanceFlow categoryId={category.id} styleId={style.id} />
         ) : (
           <CreateFlow categoryId={category.id} styleId={style.id} />
         )}

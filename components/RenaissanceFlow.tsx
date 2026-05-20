@@ -1,18 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { SubStyleSelector } from '@/components/SubStyleSelector'
 import { CreateFlow } from '@/components/CreateFlow'
 import { CLOTHING_OPTIONS } from '@/lib/styles'
 import type { CategoryId } from '@/lib/styles'
-import type { RenaissanceSubStyle } from '@/lib/styles'
 
 export type PetPose = 'standing' | 'laying'
 
 interface RenaissanceFlowProps {
   categoryId: CategoryId
   styleId: string
-  subStyles: RenaissanceSubStyle[]
 }
 
 function OptionButton({
@@ -39,8 +36,7 @@ function OptionButton({
   )
 }
 
-export function RenaissanceFlow({ categoryId, styleId, subStyles }: RenaissanceFlowProps) {
-  const [selectedSubStyleId, setSelectedSubStyleId] = useState(subStyles[0]?.id ?? 'florentine')
+export function RenaissanceFlow({ categoryId, styleId }: RenaissanceFlowProps) {
   const [petPose, setPetPose] = useState<PetPose>('standing')
 
   const clothingOptions = CLOTHING_OPTIONS[categoryId] ?? []
@@ -72,12 +68,6 @@ export function RenaissanceFlow({ categoryId, styleId, subStyles }: RenaissanceF
 
   return (
     <>
-      <SubStyleSelector
-        subStyles={subStyles}
-        selectedId={selectedSubStyleId}
-        onSelect={setSelectedSubStyleId}
-      />
-
       {categoryId === 'pets' && (
         <div className="mb-10">
           <h3 className="mb-4 text-sm font-medium uppercase tracking-widest text-white/40">
@@ -120,8 +110,6 @@ export function RenaissanceFlow({ categoryId, styleId, subStyles }: RenaissanceF
       <CreateFlow
         categoryId={categoryId}
         styleId={styleId}
-        subStyleId={selectedSubStyleId}
-        hideColourPalette
         petPose={categoryId === 'pets' ? petPose : undefined}
         clothingChoices={Object.keys(clothingChoices).length > 0 ? clothingChoices : undefined}
       />

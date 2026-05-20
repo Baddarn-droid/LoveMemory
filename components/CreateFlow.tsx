@@ -42,8 +42,6 @@ interface CreateFlowProps {
   subStyleId?: string
   petPose?: PetPose
   clothingChoices?: Record<string, string>
-  /** When true, never show the standalone colour palette (e.g. Renaissance sub-styles) */
-  hideColourPalette?: boolean
 }
 
 function OptionButton({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
@@ -62,7 +60,7 @@ function OptionButton({ selected, onClick, children }: { selected: boolean; onCl
   )
 }
 
-export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingChoices: clothingChoicesProp, hideColourPalette = false }: CreateFlowProps) {
+export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingChoices: clothingChoicesProp }: CreateFlowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [internalPetPose, setInternalPetPose] = useState<PetPose>('standing')
   const effectivePetPose = categoryId === 'pets' ? (petPose ?? internalPetPose) : petPose
@@ -83,8 +81,8 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
   const showClothingSelectors = false
 
   const [colourOptionId, setColourOptionId] = useState(COLOUR_OPTIONS[0]?.id ?? 'crimson-gold')
-  /** Era colours come from the style prompt / Renaissance sub-style — no standalone picker */
-  const showColourPalette = false
+  /** Colour picker only on Renaissance — era styles carry colours in their prompt */
+  const showColourPalette = styleId === 'renaissance'
 
   useEffect(() => {
     setInternalClothingChoices(
@@ -173,7 +171,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
         categoryId,
         styleId,
         subStyleId,
-        colourOptionId: undefined,
+        colourOptionId: showColourPalette ? colourOptionId : undefined,
         petPose: effectivePetPose,
         clothingChoices: clothingChoicesProp,
       })
@@ -229,7 +227,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
           categoryId,
           styleId,
           subStyleId,
-          colourOptionId: undefined,
+          colourOptionId: showColourPalette ? colourOptionId : undefined,
           petPose: effectivePetPose,
           clothingChoices: clothingChoicesProp,
         })
