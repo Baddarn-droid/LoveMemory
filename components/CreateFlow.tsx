@@ -279,7 +279,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
             <p className="mt-4 text-xs text-white/30">JPG, PNG up to 10MB</p>
             <p className="mt-3 max-w-xs text-xs text-white/40">
               Generation usually takes{' '}
-              <span className="text-amber-200/80">8–20 seconds</span> — natural unfiltered faces preserved.
+              <span className="text-amber-200/80">15–35 seconds</span> — your exact face preserved, zero filters.
             </p>
         </div>
         </motion.div>
@@ -328,7 +328,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
                     {' elapsed · '}
                   </>
                 ) : null}
-                Usually 8–20 seconds
+                Usually 15–35 seconds
               </p>
               <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                 <div className="h-full w-2/5 animate-pulse rounded-full bg-gradient-to-r from-amber-500/40 via-amber-400 to-amber-500/40" />
@@ -349,8 +349,8 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
               <p className="mb-2 text-white/60">Generate your portrait before you buy — free to try</p>
               <p className="mb-5 max-w-sm text-xs leading-relaxed text-amber-200/75">
                 Fast light edit (typically{' '}
-                <strong className="font-semibold text-amber-200">8–20 seconds</strong>) — your real face preserved,
-                your photo. What you see is what you get after purchase.
+                <strong className="font-semibold text-amber-200">15–35 seconds</strong>) — your exact face copied from
+                your photo, no AI filters.
               </p>
               <button
                 onClick={generatePortrait}
