@@ -17,6 +17,8 @@ interface CreateFlowProps {
   subStyleId?: string
   petPose?: PetPose
   clothingChoices?: Record<string, string>
+  /** When true, never show the standalone colour palette (e.g. Renaissance sub-styles) */
+  hideColourPalette?: boolean
 }
 
 function OptionButton({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
@@ -35,7 +37,7 @@ function OptionButton({ selected, onClick, children }: { selected: boolean; onCl
   )
 }
 
-export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingChoices: clothingChoicesProp }: CreateFlowProps) {
+export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingChoices: clothingChoicesProp, hideColourPalette = false }: CreateFlowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [internalPetPose, setInternalPetPose] = useState<PetPose>('standing')
   const effectivePetPose = categoryId === 'pets' ? (petPose ?? internalPetPose) : petPose
@@ -55,8 +57,8 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
   const showClothingSelectors = categoryId === 'pets' && clothingChoicesProp === undefined && clothingOptions.length > 0
 
   const [colourOptionId, setColourOptionId] = useState(COLOUR_OPTIONS[0]?.id ?? 'crimson-gold')
-  /** Renaissance sub-styles embed their own palette — skip the separate colour picker */
-  const showColourPalette = !subStyleId
+  /** Renaissance sub-styles embed palette in the style choice — no second picker */
+  const showColourPalette = !hideColourPalette && !subStyleId
 
   useEffect(() => {
     setInternalClothingChoices(

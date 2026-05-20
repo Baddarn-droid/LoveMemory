@@ -81,7 +81,7 @@ export function StyleSearch({ categorySlug }: StyleSearchProps) {
       </div>
 
       {showDropdown && (
-        <div className="absolute top-full left-0 right-0 z-20 mt-2 max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-charcoal shadow-xl">
+        <div className="absolute top-full left-0 right-0 z-20 mt-2 max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-charcoal shadow-xl scrollbar-dark">
           {results.map((style, i) => (
             <Link
               key={style.id}

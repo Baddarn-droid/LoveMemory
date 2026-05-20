@@ -121,6 +121,7 @@ export function RenaissanceFlow({ categoryId, styleId, subStyles }: RenaissanceF
         categoryId={categoryId}
         styleId={styleId}
         subStyleId={selectedSubStyleId}
+        hideColourPalette
         petPose={categoryId === 'pets' ? petPose : undefined}
         clothingChoices={Object.keys(clothingChoices).length > 0 ? clothingChoices : undefined}
       />

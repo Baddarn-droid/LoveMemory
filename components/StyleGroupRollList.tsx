@@ -50,7 +50,7 @@ export function StyleGroupRollList({ categorySlug, groups }: StyleGroupRollListP
                   className="overflow-hidden"
                 >
                   <div className="border-t border-white/5 px-5 py-3">
-                    <div className="max-h-64 space-y-1 overflow-y-auto pr-2">
+                    <div className="space-y-1">
                       {group.styles.map((style) => (
                         <Link
                           key={style.id}
