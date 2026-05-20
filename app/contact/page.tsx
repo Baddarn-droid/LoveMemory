@@ -5,7 +5,7 @@ export const metadata = {
   description: 'Get in touch with LoveMemory. Email us for custom portraits and support.',
 }
 
-const EMAIL = 'love.memory@gmail.com'
+const EMAIL = 'adrian.lovememory@gmail.com'
 
 export default function ContactPage() {
   return (

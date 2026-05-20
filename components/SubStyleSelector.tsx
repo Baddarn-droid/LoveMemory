@@ -11,7 +11,7 @@ interface SubStyleSelectorProps {
   title?: string
 }
 
-export function SubStyleSelector({ subStyles, selectedId, onSelect, title = 'CHOOSE YOUR RENAISSANCE STYLE' }: SubStyleSelectorProps) {
+export function SubStyleSelector({ subStyles, selectedId, onSelect, title = 'CHOOSE YOUR RENAISSANCE VARIANT' }: SubStyleSelectorProps) {
   return (
     <div className="mb-16">
       <h2 className="mb-6 text-center text-sm font-medium uppercase tracking-widest text-white/50">
@@ -46,16 +46,18 @@ export function SubStyleSelector({ subStyles, selectedId, onSelect, title = 'CHO
               <p className={`mt-2 max-w-2xl text-sm leading-relaxed ${isSelected ? 'text-emerald-200/80' : 'text-white/60'}`}>
                 {sub.description}
               </p>
-              <div className="mt-4 flex gap-2.5">
-                {(sub.colors ?? []).map((color, i) => (
-                  <span
-                    key={i}
-                    className="h-6 w-6 shrink-0 rounded-full border-2 border-white/20 shadow-sm"
-                    style={{ backgroundColor: color }}
-                    aria-hidden
-                  />
-                ))}
-              </div>
+              {sub.colors && sub.colors.length > 0 && (
+                <div className="mt-4 flex gap-2.5">
+                  {sub.colors.map((color, i) => (
+                    <span
+                      key={i}
+                      className="h-6 w-6 shrink-0 rounded-full border-2 border-white/20 shadow-sm"
+                      style={{ backgroundColor: color }}
+                      aria-hidden
+                    />
+                  ))}
+                </div>
+              )}
             </motion.button>
           )
         })}

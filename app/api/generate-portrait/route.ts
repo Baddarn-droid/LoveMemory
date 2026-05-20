@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI, { toFile } from 'openai'
 import sharp from 'sharp'
-import { getStylePrompt, getClothingPromptText, getColourPromptText, FACE_PRESERVATION, FULL_FRAME_INSTRUCTION, PET_COMPOSITION_FIRST, PET_FACE_CENTER, PET_FRAMING_OVERRIDE, PET_HEADROOM, FAMILY_COMPOSITION_FIRST, FAMILY_FRAMING_OVERRIDE, FAMILY_HEADROOM, type CategoryId } from '@/lib/styles'
+import { getStylePrompt, getClothingPromptText, getColourPromptText, FACE_PRESERVATION, FACE_PRESERVATION_EMPHASIS, FULL_FRAME_INSTRUCTION, PET_COMPOSITION_FIRST, PET_FACE_CENTER, PET_FRAMING_OVERRIDE, PET_HEADROOM, FAMILY_COMPOSITION_FIRST, FAMILY_FRAMING_OVERRIDE, FAMILY_HEADROOM, FAMILY_EXACT_PEOPLE_COUNT, type CategoryId } from '@/lib/styles'
 
 const DEFAULT_PROMPT = `${FACE_PRESERVATION}
 
 ${FULL_FRAME_INSTRUCTION}
 
-Transform this photo into a beautiful, artistic portrait. Use soft professional lighting, elegant and timeless style. Make it look like a premium custom portrait — refined, high quality, and worthy of framing. Apply only subtle enhancement to the face.`
+Transform this photo into a beautiful, artistic portrait. Use soft professional lighting, elegant and timeless style. Make it look like a premium custom portrait — refined, high quality, and worthy of framing. Do not apply any filter or effect to faces; keep them identical to the original.`
 
 const VALID_CATEGORY_IDS: CategoryId[] = ['pets', 'family']
 
@@ -92,7 +92,8 @@ export async function POST(request: NextRequest) {
       prompt = prompt + '\n\n' + PET_FACE_CENTER
     }
     if (categoryId === 'family') {
-      prompt = FAMILY_COMPOSITION_FIRST + '\n\n' + prompt
+      prompt = FAMILY_EXACT_PEOPLE_COUNT + '\n\n' + FAMILY_COMPOSITION_FIRST + '\n\n' + prompt
+      prompt = prompt + '\n\n' + FAMILY_EXACT_PEOPLE_COUNT
       prompt = prompt + '\n\n' + FAMILY_HEADROOM + '\n\nCOMPOSITION: Gallery-worthy, balanced. Everyone in the picture must be fully visible.'
       prompt = prompt + '\n\n' + FAMILY_HEADROOM
     }
@@ -102,6 +103,7 @@ export async function POST(request: NextRequest) {
     if (categoryId) {
       prompt = prompt + getClothingPromptText(categoryId, clothingChoices)
     }
+    prompt = prompt + '\n\n' + FACE_PRESERVATION_EMPHASIS
   }
 
   const categoryFromForm = formData.get('category')

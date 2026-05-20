@@ -78,12 +78,16 @@ STYLE: Vibrant painterly look, bold visible brushstrokes. Soft pastels, rich col
   },
 ]
 
-/** Base instruction for face preservation */
-export const FACE_PRESERVATION = `CRITICAL - FACE PRESERVATION:
-- Keep the subject's face COMPLETELY recognizable - virtually identical to the original photo
-- Preserve all facial features, expressions, and likeness exactly as they appear
-- Only apply subtle oil painting texture to the face, no other modifications
-- Do NOT change face shape, features, or appearance`
+/** Base instruction for face preservation — no filters; maximum recognizability for pets and humans */
+export const FACE_PRESERVATION = `CRITICAL - FACE PRESERVATION (NO FILTERS):
+- Keep every face (person or animal) COMPLETELY recognizable — identical to the original photo. Faces must look like real photographs, not paintings.
+- Do NOT apply any filter, blur, softening, oil painting texture, or artistic effect to the face or skin. Do NOT paint over the face.
+- Preserve all facial features, expressions, skin texture, and likeness exactly as they appear — zero stylization on the face
+- Apply the artistic style to clothing, background, and surroundings only; leave all faces photographically clear and unchanged
+- Do NOT change face shape, features, or appearance. The face must be instantly recognizable as the same person or animal.`
+
+/** Repeated at end of prompt: faces must stay photorealistic and untouched by the art style */
+export const FACE_PRESERVATION_EMPHASIS = `REMINDER - FACES UNCHANGED: Do NOT paint over the face. Do NOT apply oil painting, brushstrokes, or any art style to the face or skin. The face must look like a real photograph of the same person or animal — instantly recognizable. Style goes on clothes and background only.`
 
 /** For pet portraits: put this FIRST in the prompt so the model prioritizes it. */
 export const PET_COMPOSITION_FIRST = `COMPOSITION (highest priority): In the output image, the animal's face must be in the CENTER of the frame — not at the top. Leave clear empty space ABOVE the head. Wrong: face near top edge. Right: face in the middle with space above. Apply this composition first, then the style below.`
@@ -105,6 +109,13 @@ export const FAMILY_FRAMING_OVERRIDE = `For this family portrait only: ignore "k
 
 /** Family: headroom so no heads or headwear are cropped. */
 export const FAMILY_HEADROOM = `CRITICAL — UPPER FRAME: Leave generous empty space above the group. The ENTIRE top of every person's head and any headwear (hats, crowns, hair) must be fully visible with clear space above. Never crop or cut off anyone's head or headwear. Everything in the picture must be seen.`
+
+/** Family/couple: output must have the exact same number of people — especially ONE person must stay ONE. */
+export const FAMILY_EXACT_PEOPLE_COUNT = `CRITICAL — SAME NUMBER OF PEOPLE (DO NOT IGNORE):
+- If the photo shows ONE person, the output must show exactly ONE person. Do NOT add a spouse, children, or duplicate the person to make a "family". One person in = one person out. Single portrait only.
+- If the photo shows TWO people (a couple), show exactly two people. No extra figures.
+- If the photo shows 3, 4, or 5 people, show exactly that many. Never add, duplicate, or remove anyone.
+- Do NOT create a family portrait from a single-person photo. Do NOT clone or copy the person multiple times.`
 
 /** Ensures the full subject is visible — no cropping or zooming that cuts off face/body */
 export const FULL_FRAME_INSTRUCTION = `CRITICAL - FRAMING AND COMPOSITION:

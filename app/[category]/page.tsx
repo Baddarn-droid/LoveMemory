@@ -34,7 +34,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
         {/* Header */}
         <div className="mb-16 text-center">
-          <p className="mb-2 text-sm text-amber-400/80">From £29.90 · No subscription</p>
+          <p className="mb-2 text-sm text-amber-400/80">Price TBD · No subscription</p>
           <h1 className="font-display text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-satoshi)' }}>
             {category.label}
           </h1>

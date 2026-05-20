@@ -19,7 +19,7 @@ const categories = [
 const steps = [
   { num: 1, title: 'Choose your style', desc: 'Renaissance, Hollywood, Fantasy & more' },
   { num: 2, title: 'Upload your photo', desc: 'We turn it into art in seconds' },
-  { num: 3, title: 'Get your portrait', desc: 'Download, print, or framed — from £29.90' },
+  { num: 3, title: 'Get your portrait', desc: 'Download, print, or framed — price TBD' },
 ]
 
 /** One cat, one family, one dachshund — order shuffled on load */
@@ -68,7 +68,7 @@ export default function Home() {
           transition={{ duration: 0.5 }}
           className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/5 px-4 py-1.5 text-sm text-amber-300"
         >
-          <span>From £29.90</span>
+          <span>Price TBD</span>
           <span className="text-white/40">·</span>
           <span>Try before you buy</span>
         </motion.div>

@@ -112,7 +112,7 @@ export default async function StylePage({ params }: { params: Promise<{ category
           <p className="mt-6 text-sm leading-relaxed text-white/50">
             {style.description}
           </p>
-          <p className="mt-3 text-sm text-amber-400/80">£29.90 · Preview free · No subscription</p>
+          <p className="mt-3 text-sm text-amber-400/80">Price TBD · Preview free · No subscription</p>
         </div>
 
         {/* Example photos section */}

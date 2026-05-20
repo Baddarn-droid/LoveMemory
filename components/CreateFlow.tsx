@@ -55,6 +55,8 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
   const showClothingSelectors = categoryId === 'pets' && clothingChoicesProp === undefined && clothingOptions.length > 0
 
   const [colourOptionId, setColourOptionId] = useState(COLOUR_OPTIONS[0]?.id ?? 'crimson-gold')
+  /** Renaissance sub-styles embed their own palette — skip the separate colour picker */
+  const showColourPalette = !subStyleId
 
   useEffect(() => {
     setInternalClothingChoices(
@@ -120,7 +122,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
         categoryId,
         styleId,
         subStyleId,
-        colourOptionId,
+        colourOptionId: showColourPalette ? colourOptionId : undefined,
         petPose: effectivePetPose,
         clothingChoices: Object.keys(effectiveClothingChoices).length ? effectiveClothingChoices : undefined,
       })
@@ -128,7 +130,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
       formData.append('image', uploadedFile)
       formData.append('prompt', prompt)
       formData.append('category', categoryId)
-      formData.append('colourOptionId', colourOptionId)
+      if (showColourPalette) formData.append('colourOptionId', colourOptionId)
       const apiBase = getApiBase()
       const res = await fetch(`${apiBase || ''}/api/generate-portrait`, { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))
@@ -203,50 +205,51 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
 
   return (
     <div id="create" className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 md:p-10">
-      {/* Colour palette - card style with matching swatches */}
-      <div className="mb-10">
-        <h3 className="mb-6 text-center text-sm font-medium uppercase tracking-widest text-white/50">
-          Choose your colour palette
-        </h3>
-        <div className="space-y-4">
-          {COLOUR_OPTIONS.map((opt) => {
-            const isSelected = colourOptionId === opt.id
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => setColourOptionId(opt.id)}
-                className={`relative flex w-full flex-col items-start rounded-2xl border-2 p-6 text-left transition-colors ${
-                  isSelected
-                    ? 'border-emerald-500 bg-emerald-500/10'
-                    : 'border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]'
-                }`}
-              >
-                {isSelected && (
-                  <div className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20">
-                    <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
+      {showColourPalette && (
+        <div className="mb-10">
+          <h3 className="mb-6 text-center text-sm font-medium uppercase tracking-widest text-white/50">
+            Choose your colour palette
+          </h3>
+          <div className="space-y-4">
+            {COLOUR_OPTIONS.map((opt) => {
+              const isSelected = colourOptionId === opt.id
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setColourOptionId(opt.id)}
+                  className={`relative flex w-full flex-col items-start rounded-2xl border-2 p-6 text-left transition-colors ${
+                    isSelected
+                      ? 'border-emerald-500 bg-emerald-500/10'
+                      : 'border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]'
+                  }`}
+                >
+                  {isSelected && (
+                    <div className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20">
+                      <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                  <h4 className="pr-10 font-display text-lg font-semibold text-white" style={{ fontFamily: 'var(--font-satoshi)' }}>
+                    {opt.label}
+                  </h4>
+                  <div className="mt-4 flex gap-2.5">
+                    {(opt.colors ?? []).map((color, i) => (
+                      <span
+                        key={i}
+                        className="h-6 w-6 shrink-0 rounded-full border-2 border-white/20 shadow-sm"
+                        style={{ backgroundColor: color }}
+                        aria-hidden
+                      />
+                    ))}
                   </div>
-                )}
-                <h4 className="pr-10 font-display text-lg font-semibold text-white" style={{ fontFamily: 'var(--font-satoshi)' }}>
-                  {opt.label}
-                </h4>
-                <div className="mt-4 flex gap-2.5">
-                  {(opt.colors ?? []).map((color, i) => (
-                    <span
-                      key={i}
-                      className="h-6 w-6 shrink-0 rounded-full border-2 border-white/20 shadow-sm"
-                      style={{ backgroundColor: color }}
-                      aria-hidden
-                    />
-                  ))}
-                </div>
-              </button>
-            )
-          })}
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Pet pose selector - shown for all pet styles when not inside RenaissanceFlow */}
       {showPetPoseSelector && (
@@ -462,7 +465,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
               <h4 className="mb-2 text-lg font-bold text-white">Instant Masterpiece</h4>
               <p className="mb-4 text-sm text-white/50">Instant high-resolution download — perfect for sharing or saving.</p>
               <div className="mb-4">
-                <span className="text-3xl font-bold text-white">£29.90</span>
+                <span className="text-3xl font-bold text-white">TBD</span>
               </div>
               <ul className="mb-6 space-y-2 text-sm text-white/70">
                 <li className="flex items-start gap-2">
@@ -508,7 +511,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
               <h4 className="mb-2 text-lg font-bold text-white">Fine Art Print</h4>
               <p className="mb-4 text-sm text-white/50">Printed on museum-quality archival paper with fade-resistant inks.</p>
               <div className="mb-4">
-                <span className="text-3xl font-bold text-white">£29.90</span>
+                <span className="text-3xl font-bold text-white">TBD</span>
               </div>
               <ul className="mb-6 space-y-2 text-sm text-white/70">
                 <li className="flex items-start gap-2">
@@ -567,7 +570,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, petPose, clothingC
               <h4 className="mb-2 text-lg font-bold text-white">Large Canvas</h4>
               <p className="mb-4 text-sm text-white/50">Gallery-quality canvas on wood — arrives ready to hang.</p>
               <div className="mb-4">
-                <span className="text-3xl font-bold text-white">£29.90</span>
+                <span className="text-3xl font-bold text-white">TBD</span>
               </div>
               <ul className="mb-6 space-y-2 text-sm text-white/70">
                 <li className="flex items-start gap-2">
