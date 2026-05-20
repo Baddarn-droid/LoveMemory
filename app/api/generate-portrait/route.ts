@@ -1,28 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  getStylePrompt,
-  getClothingPromptText,
-  getColourPromptText,
-  FACE_PRESERVATION,
-  FACE_PRESERVATION_EMPHASIS,
-  FULL_FRAME_INSTRUCTION,
-  PET_COMPOSITION_FIRST,
-  PET_FACE_CENTER,
-  PET_FRAMING_OVERRIDE,
-  PET_HEADROOM,
-  FAMILY_COMPOSITION_FIRST,
-  FAMILY_FRAMING_OVERRIDE,
-  FAMILY_HEADROOM,
-  FAMILY_EXACT_PEOPLE_COUNT,
-  type CategoryId,
-} from '@/lib/styles'
+import type { CategoryId } from '@/lib/styles'
+import { buildPortraitPrompt } from '@/lib/buildPortraitPrompt'
 import { generatePortraitImage } from '@/lib/portraitGeneration'
-
-const DEFAULT_PROMPT = `${FACE_PRESERVATION}
-
-${FULL_FRAME_INSTRUCTION}
-
-Transform this photo into a beautiful, artistic portrait. Use soft professional lighting, elegant and timeless style. Make it look like a premium custom portrait — refined, high quality, and worthy of framing. Do not apply any filter or effect to faces; keep them identical to the original.`
 
 const VALID_CATEGORY_IDS: CategoryId[] = ['pets', 'family']
 
@@ -63,8 +42,8 @@ export async function POST(request: NextRequest) {
     const categoryId =
       typeof categoryRaw === 'string' && VALID_CATEGORY_IDS.includes(categoryRaw as CategoryId)
         ? (categoryRaw as CategoryId)
-        : null
-    const styleId = typeof styleRaw === 'string' ? styleRaw : null
+        : 'family'
+    const styleId = typeof styleRaw === 'string' ? styleRaw : 'renaissance'
     const subStyleId = typeof subStyleRaw === 'string' ? subStyleRaw : undefined
     const colourOptionId = typeof colourOptionRaw === 'string' ? colourOptionRaw : undefined
     const petPose =
@@ -77,43 +56,14 @@ export async function POST(request: NextRequest) {
     } catch {
       /* ignore */
     }
-    prompt = (categoryId && styleId && getStylePrompt(categoryId, styleId, subStyleId)) || DEFAULT_PROMPT
-    if (categoryId && styleId) {
-      prompt = prompt + '\n\n' + FULL_FRAME_INSTRUCTION
-      if (categoryId === 'pets') prompt = prompt + '\n\n' + PET_FRAMING_OVERRIDE
-      if (categoryId === 'family') prompt = prompt + '\n\n' + FAMILY_FRAMING_OVERRIDE
-    }
-    if (categoryId === 'pets') {
-      prompt = PET_COMPOSITION_FIRST + '\n\n' + prompt
-      prompt =
-        prompt +
-        '\n\n' +
-        PET_FACE_CENTER +
-        '\n\n' +
-        PET_HEADROOM +
-        '\n\nCOMPOSITION: Full or three-quarter view; not too zoomed in.'
-      if (petPose) {
-        const poseInstruction =
-          petPose === 'standing'
-            ? ' Pose the pet STANDING upright, facing the viewer, dignified noble stance.'
-            : ' Pose the pet LAYING DOWN on a luxurious velvet cushion or pillow, relaxed and regal, surrounded by rich fabric.'
-        prompt = prompt + poseInstruction
-      }
-      prompt = prompt + '\n\n' + PET_FACE_CENTER
-    }
-    if (categoryId === 'family') {
-      prompt = FAMILY_EXACT_PEOPLE_COUNT + '\n\n' + FAMILY_COMPOSITION_FIRST + '\n\n' + prompt
-      prompt = prompt + '\n\n' + FAMILY_EXACT_PEOPLE_COUNT
-      prompt =
-        prompt +
-        '\n\n' +
-        FAMILY_HEADROOM +
-        '\n\nCOMPOSITION: Gallery-worthy, balanced. Everyone in the picture must be fully visible.'
-      prompt = prompt + '\n\n' + FAMILY_HEADROOM
-    }
-    if (colourOptionId) prompt = prompt + getColourPromptText(colourOptionId)
-    if (categoryId) prompt = prompt + getClothingPromptText(categoryId, clothingChoices)
-    prompt = prompt + '\n\n' + FACE_PRESERVATION_EMPHASIS
+    prompt = buildPortraitPrompt({
+      categoryId,
+      styleId,
+      subStyleId,
+      colourOptionId,
+      petPose,
+      clothingChoices: Object.keys(clothingChoices).length ? clothingChoices : undefined,
+    })
   }
 
   const categoryFromForm = formData.get('category')

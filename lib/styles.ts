@@ -81,13 +81,32 @@ STYLE: Vibrant painterly look, bold visible brushstrokes. Soft pastels, rich col
 /** Base instruction for face preservation — no filters; maximum recognizability for pets and humans */
 export const FACE_PRESERVATION = `CRITICAL - FACE PRESERVATION (NO FILTERS):
 - Keep every face (person or animal) COMPLETELY recognizable — identical to the original photo. Faces must look like real photographs, not paintings.
-- Do NOT apply any filter, blur, softening, oil painting texture, or artistic effect to the face or skin. Do NOT paint over the face.
-- Preserve all facial features, expressions, skin texture, and likeness exactly as they appear — zero stylization on the face
-- Apply the artistic style to clothing, background, and surroundings only; leave all faces photographically clear and unchanged
-- Do NOT change face shape, features, or appearance. The face must be instantly recognizable as the same person or animal.`
+- Do NOT apply any filter, blur, softening, airbrush, beauty filter, oil painting texture, or artistic effect to the face, skin, or hair.
+- Preserve all facial features, expressions, skin texture, pores, and likeness exactly as they appear — zero stylization on the face
+- Preserve hairstyle exactly: same hair colour, length, cut, texture, volume, parting, and bangs as the original photo
+- Apply the artistic style to clothing, background, and surroundings only; leave all faces and hair photographically clear and unchanged
+- Do NOT change face shape, features, bone structure, or appearance. The person must instantly recognize themselves`
+
+/** Family/couple: identity lock — must be first in prompt for human portraits */
+export const FAMILY_FACE_IDENTITY_FIRST = `HIGHEST PRIORITY — IDENTITY (HUMANS). The customer MUST instantly recognize every person as themselves. This overrides all artistic style instructions below.
+
+FACE — must match the upload exactly:
+- Same face shape, jaw, cheeks, forehead, chin, eye shape and colour, nose, mouth, lips, eyebrows, skin tone, freckles, moles, wrinkles, and expression
+- Photorealistic skin — sharp, clear, unfiltered. NO oil paint, brushstrokes, soft focus, smoothing, beautification, or "portrait painting" effect on any face
+- Treat each face as a photograph composited unchanged onto the styled portrait — do NOT repaint faces
+
+HAIR — must match the upload exactly:
+- Same hair colour, length, cut, texture, curl, volume, parting, fringe/bangs, and style as the original photo
+- Do NOT restyle, recolour, shorten, or give period/Victorian/Renaissance hairstyles
+- Optional headwear may sit ON TOP of the existing hair only — never replace or paint over the hair
+
+ONLY stylize: clothing, body garments, jewellery (not replacing facial features), and background.`
+
+/** Repeated at end of family prompts */
+export const FAMILY_FACE_IDENTITY_EMPHASIS = `FINAL REMINDER — IDENTITY: Every face and hairstyle must be identical to the upload — photorealistic, zero filters, instantly recognizable. The user must see themselves. Style applies to clothes and background ONLY. Do NOT paint over faces or hair.`
 
 /** Repeated at end of prompt: faces must stay photorealistic and untouched by the art style */
-export const FACE_PRESERVATION_EMPHASIS = `REMINDER - FACES UNCHANGED: Do NOT paint over the face. Do NOT apply oil painting, brushstrokes, or any art style to the face or skin. The face must look like a real photograph of the same person or animal — instantly recognizable. Style goes on clothes and background only.`
+export const FACE_PRESERVATION_EMPHASIS = `REMINDER - FACES AND HAIR UNCHANGED: Do NOT paint over the face or hair. Do NOT apply oil painting, brushstrokes, soft focus, or any art style to the face, skin, or hairstyle. The face must look like a real photograph of the same person or animal — instantly recognizable. Style goes on clothes and background only.`
 
 /** For pet portraits: put this FIRST in the prompt so the model prioritizes it. */
 export const PET_COMPOSITION_FIRST = `COMPOSITION (highest priority): In the output image, the animal's face must be in the CENTER of the frame — not at the top. Leave clear empty space ABOVE the head. Wrong: face near top edge. Right: face in the middle with space above. Apply this composition first, then the style below.`
@@ -129,11 +148,10 @@ ${FACE_PRESERVATION}
 
 ${FULL_FRAME_INSTRUCTION}
 
-ADD RENAISSANCE ELEMENTS:
+ADD RENAISSANCE ELEMENTS (clothing and background only — never faces or hair):
 - Replace clothing with period-appropriate attire (specific colors and styles come from the chosen sub-style)
-- Add period jewelry: pearl necklaces, gold chains, jeweled brooches, ornate rings, decorative headpieces
-- Include Renaissance accessories: feathered hats, lace collars (ruffs), embroidered gloves, decorative belts
-- Use rich fabrics: velvet, silk, brocade
+- Add period jewellery at neck/chest: pearl necklaces, gold chains, brooches — not on faces
+- Use rich fabrics: velvet, silk, brocade on garments only
 - Add a classical background (colors and style from chosen sub-style)
 
 ARTISTIC STYLE:
@@ -178,10 +196,10 @@ FOR PETS SPECIFICALLY:
         promptText: `${RENAISSANCE_BASE}
 
 FOR FAMILIES & COUPLES:
-- Keep all subjects' faces completely recognizable and unchanged
-- Dress each person in coordinated Renaissance noble attire appropriate to their age
-- Add family or couple jewelry: matching brooches, coordinated necklaces, or crests
-- Create a formal portrait composition with elegant poses (family or couple)`,
+- Faces and hair must remain photorealistic and identical to the upload — see identity rules above
+- Dress each person in coordinated period attire appropriate to their age — clothing only, not faces
+- Add family or couple jewellery at neck/chest only — not altering facial features
+- Create a formal portrait composition with natural poses`,
       },
     ],
   },
@@ -453,18 +471,18 @@ export const CLOTHING_OPTIONS: Record<CategoryId, ClothingOption[]> = {
       id: 'headwear',
       label: 'Headwear',
       choices: [
-        { id: 'hats', label: 'Crowns or feathered hats', promptText: 'Add crowns, feathered hats, or ornate headpieces to family members.' },
-        { id: 'headbands', label: 'Pearl headbands', promptText: 'Add pearl headbands or decorative hair ribbons.' },
-        { id: 'none', label: 'No headwear', promptText: 'No headwear on any family member.' },
+        { id: 'hats', label: 'Crowns or feathered hats', promptText: 'Add crowns or feathered hats ON TOP of each person\'s existing hairstyle — do not change hair colour, length, cut, or face.' },
+        { id: 'headbands', label: 'Pearl headbands', promptText: 'Add pearl headbands or ribbons ON TOP of existing hair — preserve exact hairstyle and face.' },
+        { id: 'none', label: 'No headwear', promptText: 'No headwear. Keep every person\'s original hairstyle exactly as in the photo.' },
       ],
     },
     {
       id: 'collar',
       label: 'Collars & ruffs',
       choices: [
-        { id: 'ruffs', label: 'Elaborate ruffs', promptText: 'Add elaborate white ruffled ruffs to all subjects.' },
-        { id: 'lace', label: 'Simple lace collars', promptText: 'Add simple lace collars or delicate neckpieces.' },
-        { id: 'open', label: 'Open neck', promptText: 'Open neckline, no ruff or collar.' },
+        { id: 'ruffs', label: 'Elaborate ruffs', promptText: 'Add elaborate white ruffled ruffs at the neckline only — do not cover or alter faces or hair.' },
+        { id: 'lace', label: 'Simple lace collars', promptText: 'Add simple lace collars at the neckline only — faces and hair unchanged.' },
+        { id: 'open', label: 'Open neck', promptText: 'Open neckline — faces and hair remain exactly as in the original photo.' },
       ],
     },
   ],

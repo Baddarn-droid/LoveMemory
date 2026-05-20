@@ -18,6 +18,8 @@ import {
   FAMILY_FRAMING_OVERRIDE,
   FAMILY_HEADROOM,
   FAMILY_EXACT_PEOPLE_COUNT,
+  FAMILY_FACE_IDENTITY_FIRST,
+  FAMILY_FACE_IDENTITY_EMPHASIS,
   type CategoryId,
 } from './styles'
 
@@ -50,8 +52,16 @@ export function buildPortraitPrompt(options: {
     prompt = PET_COMPOSITION_FIRST + '\n\n' + prompt
   }
   if (categoryId === 'family') {
-    // One-person rule first so model does not create a "family" from a single photo
-    prompt = FAMILY_EXACT_PEOPLE_COUNT + '\n\n' + FAMILY_COMPOSITION_FIRST + '\n\n' + prompt
+    prompt =
+      FAMILY_FACE_IDENTITY_FIRST +
+      '\n\n' +
+      FACE_PRESERVATION +
+      '\n\n' +
+      FAMILY_EXACT_PEOPLE_COUNT +
+      '\n\n' +
+      FAMILY_COMPOSITION_FIRST +
+      '\n\n' +
+      prompt
   }
   if (categoryId && styleId) {
     prompt = prompt + '\n\n' + FULL_FRAME_INSTRUCTION
@@ -84,9 +94,8 @@ export function buildPortraitPrompt(options: {
   if (categoryId === 'family') {
     prompt = prompt + '\n\n' + FAMILY_EXACT_PEOPLE_COUNT
     prompt = prompt + '\n\n' + FAMILY_HEADROOM + '\n\nCOMPOSITION: Gallery-worthy, balanced. Everyone in the picture must be fully visible.'
-    prompt = prompt + '\n\n' + FAMILY_HEADROOM
+    prompt = prompt + '\n\n' + FAMILY_FACE_IDENTITY_EMPHASIS
   }
-  // End with strong reminder: faces stay photorealistic, no paint/filter on face
   prompt = prompt + '\n\n' + FACE_PRESERVATION_EMPHASIS
   return prompt
 }
