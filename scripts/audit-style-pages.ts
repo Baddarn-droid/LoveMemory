@@ -42,4 +42,4 @@ if (errors) {
   process.exit(1)
 }
 console.log('\nAll routes use StyleCreateSection → PortraitCustomizer → CreateFlow')
-console.log('Generation: quality=low, 512px canvas — same for pets and family on every style')
+console.log('Generation: quality=low, 384px canvas, JPEG input — pets + family, every style')

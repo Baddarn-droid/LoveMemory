@@ -5,17 +5,17 @@ import type { CategoryId } from './styles'
 export type PortraitTier = 'preview' | 'standard'
 
 /**
- * Preview profile — fastest generation, least face “filtering”, best likeness.
- * Used identically for pets AND family/couple on all 40 style pages.
- * quality=low + 512px canvas = less AI repainting of faces/fur.
+ * Fast preview profile — pets AND family/couple, all 40 styles.
+ * quality=low + 384px canvas + JPEG input = fastest generation, minimal face filtering.
  */
 export const PORTRAIT_PREVIEW_CONFIG = {
   quality: 'low' as const,
-  canvasSize: 512,
+  canvasSize: 384,
   outputSize: '1024x1024' as const,
+  inputJpegQuality: 80,
 }
 
-/** Purchased portraits use the same profile (WYSIWYG — what you preview is what you buy). */
+/** Purchased portraits use the same profile (WYSIWYG). */
 export const PORTRAIT_STANDARD_CONFIG = PORTRAIT_PREVIEW_CONFIG
 
 const TIER_CONFIG: Record<PortraitTier, typeof PORTRAIT_PREVIEW_CONFIG> = {
@@ -27,11 +27,14 @@ const TIER_CONFIG: Record<PortraitTier, typeof PORTRAIT_PREVIEW_CONFIG> = {
 export async function prepareSourceImage(
   buffer: Buffer,
   category: CategoryId | null,
-  canvasSize: number = PORTRAIT_PREVIEW_CONFIG.canvasSize
-): Promise<Buffer> {
+  canvasSize: number = PORTRAIT_PREVIEW_CONFIG.canvasSize,
+  jpegQuality: number = PORTRAIT_PREVIEW_CONFIG.inputJpegQuality
+): Promise<{ buffer: Buffer; mimeType: 'image/jpeg'; filename: string }> {
   const needsTopPadding = category === 'pets' || category === 'family'
   const topPadding = Math.round(420 * (canvasSize / 1024))
   const contentHeight = canvasSize - topPadding
+
+  let processed: Buffer
 
   if (needsTopPadding) {
     const resized = await sharp(buffer)
@@ -43,7 +46,7 @@ export async function prepareSourceImage(
     const h = meta.height ?? contentHeight
     const left = Math.round((canvasSize - w) / 2)
     const bottom = canvasSize - topPadding - h
-    return sharp(resized)
+    processed = await sharp(resized)
       .extend({
         top: topPadding,
         bottom: Math.max(0, bottom),
@@ -51,14 +54,16 @@ export async function prepareSourceImage(
         right: canvasSize - w - left,
         background: { r: 45, g: 42, b: 38 },
       })
-      .png()
+      .jpeg({ quality: jpegQuality, mozjpeg: true })
+      .toBuffer()
+  } else {
+    processed = await sharp(buffer)
+      .resize(canvasSize, canvasSize, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: jpegQuality, mozjpeg: true })
       .toBuffer()
   }
 
-  return sharp(buffer)
-    .resize(canvasSize, canvasSize, { fit: 'inside', withoutEnlargement: true })
-    .png()
-    .toBuffer()
+  return { buffer: processed, mimeType: 'image/jpeg', filename: 'image.jpg' }
 }
 
 export async function generatePortraitImage(options: {
@@ -71,8 +76,13 @@ export async function generatePortraitImage(options: {
   const { apiKey, sourceBuffer, prompt, category, tier = 'preview' } = options
   const config = TIER_CONFIG[tier]
 
-  const pngBuffer = await prepareSourceImage(sourceBuffer, category, config.canvasSize)
-  const imageFile = await toFile(pngBuffer, 'image.png', { type: 'image/png' })
+  const prepared = await prepareSourceImage(
+    sourceBuffer,
+    category,
+    config.canvasSize,
+    config.inputJpegQuality
+  )
+  const imageFile = await toFile(prepared.buffer, prepared.filename, { type: prepared.mimeType })
 
   const openai = new OpenAI({ apiKey })
   const result = await openai.images.edit({
