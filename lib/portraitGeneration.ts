@@ -1,19 +1,20 @@
 import OpenAI, { toFile } from 'openai'
 import sharp from 'sharp'
 import type { CategoryId } from './styles'
+import {
+  buildFaceProtectMask,
+  restoreFacesFromSource,
+  type PreparedSource,
+} from './facePreservation'
 
-/** Applies to every portrait — pets and family, all 40+ style routes. */
 export const UNFILTERED_PIPELINE_APPLIES_TO: readonly CategoryId[] = ['pets', 'family'] as const
 
 export type PortraitTier = 'preview' | 'standard'
 
-/**
- * Clean edit — no asymmetric padding (that caused picture-in-picture with input_fidelity).
- * Composition is handled via prompts only.
- */
+/** Face-first: high input fidelity + face mask + quality low (less beautification) */
 export const PORTRAIT_PREVIEW_CONFIG = {
-  quality: 'medium' as const,
-  inputFidelity: 'low' as const,
+  quality: 'low' as const,
+  inputFidelity: 'high' as const,
   canvasSize: 1024,
   outputSize: '1024x1024' as const,
 }
@@ -25,12 +26,12 @@ const TIER_CONFIG: Record<PortraitTier, typeof PORTRAIT_PREVIEW_CONFIG> = {
   standard: PORTRAIT_STANDARD_CONFIG,
 }
 
-/** Neutral letterbox — symmetric padding only (never a huge top band). */
+/** Symmetric letterbox — keeps face position stable for mask + restore */
 export async function prepareSourceImage(
   buffer: Buffer,
   _category: CategoryId | null,
   canvasSize: number = PORTRAIT_PREVIEW_CONFIG.canvasSize
-): Promise<Buffer> {
+): Promise<PreparedSource> {
   const resized = await sharp(buffer)
     .resize(canvasSize, canvasSize, { fit: 'inside', withoutEnlargement: false })
     .toBuffer()
@@ -41,7 +42,7 @@ export async function prepareSourceImage(
   const left = Math.round((canvasSize - w) / 2)
   const top = Math.round((canvasSize - h) / 2)
 
-  return sharp(resized)
+  const processed = await sharp(resized)
     .extend({
       top,
       bottom: canvasSize - h - top,
@@ -51,6 +52,12 @@ export async function prepareSourceImage(
     })
     .png({ compressionLevel: 6 })
     .toBuffer()
+
+  return {
+    buffer: processed,
+    size: canvasSize,
+    subjectRect: { left, top, width: w, height: h },
+  }
 }
 
 type ImageEditWithFidelity = OpenAI.Images.ImageEditParams & {
@@ -64,38 +71,38 @@ export async function generatePortraitImage(options: {
   category: CategoryId | null
   tier?: PortraitTier
 }): Promise<string> {
-  const { apiKey, sourceBuffer, prompt, tier = 'preview' } = options
+  const { apiKey, sourceBuffer, prompt, category, tier = 'preview' } = options
   const config = TIER_CONFIG[tier]
 
-  const prepared = await prepareSourceImage(sourceBuffer, null, config.canvasSize)
-  const imageFile = await toFile(prepared, 'image.png', { type: 'image/png' })
+  const prepared = await prepareSourceImage(sourceBuffer, category, config.canvasSize)
+  const imageFile = await toFile(prepared.buffer, 'image.png', { type: 'image/png' })
+  const maskBuffer = await buildFaceProtectMask(prepared.size, prepared.subjectRect, category)
+  const maskFile = await toFile(maskBuffer, 'mask.png', { type: 'image/png' })
 
   const openai = new OpenAI({ apiKey })
-  const editParams: ImageEditWithFidelity = {
+  const result = await openai.images.edit({
     model: 'gpt-image-1.5',
     image: [imageFile],
+    mask: maskFile,
     prompt,
     size: config.outputSize,
     quality: config.quality,
     input_fidelity: config.inputFidelity,
-  }
-
-  const result = await openai.images.edit(editParams)
+  } as ImageEditWithFidelity)
 
   const first = result.data?.[0]
-  if (!first) {
-    throw new Error('No image was generated.')
-  }
+  if (!first) throw new Error('No image was generated.')
 
+  let generatedB64: string
   if ('b64_json' in first && first.b64_json) {
-    return first.b64_json
-  }
-
-  if ('url' in first && first.url) {
+    generatedB64 = first.b64_json
+  } else if ('url' in first && first.url) {
     const res = await fetch(first.url)
     if (!res.ok) throw new Error('Failed to fetch generated image.')
-    return Buffer.from(await res.arrayBuffer()).toString('base64')
+    generatedB64 = Buffer.from(await res.arrayBuffer()).toString('base64')
+  } else {
+    throw new Error('Unexpected response from OpenAI.')
   }
 
-  throw new Error('Unexpected response from OpenAI.')
+  return restoreFacesFromSource(generatedB64, prepared, category, 1024)
 }

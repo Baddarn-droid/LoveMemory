@@ -86,12 +86,16 @@ export const PHOTOREALISTIC_WHOLE_IMAGE = `PHOTOREALISTIC PHOTOGRAPH — ENTIRE 
 - Sharp natural detail everywhere — background, clothing, skin, fur — like a real camera photo
 - Theme = wardrobe + environment. Everything else stays photoreal and unfiltered`
 
+/** OpenAI virtual try-on face lock — short, first in every prompt */
+export const FACE_TRYON_LOCK = `VIRTUAL TRY-ON EDIT (mandatory — all categories, all styles):
+Edit the image to change ONLY clothing and background to match the selected theme.
+Do NOT change face, facial features, skin tone, skin texture, pores, age, gender, ethnicity, eye colour, nose, lips, jaw, expression, body shape, pose, or identity.
+Preserve exact likeness, expression, and hairstyle from the upload — zero beautification, zero skin smoothing, zero filters.
+Replace only clothing and background. Match lighting naturally so the outfit looks worn, not pasted on.
+If the face looks retouched, filtered, or like a different person, the edit has FAILED.`
+
 /** Virtual try-on edit lock — must be first in every prompt (OpenAI cookbook pattern) */
-export const FACE_EDIT_LOCK = `EDIT MODE — THEME ONLY, NO FILTERS (highest priority):
-Edit this photo like a costume + set change on a real photoshoot. Change ONLY clothing and background to match the selected theme.
-The ENTIRE image must remain a sharp, raw, unfiltered photograph — identical photo quality to the upload.
-DO NOT change: face, skin texture, pores, expression, hair, body shape, or pose.
-FORBIDDEN on the whole image: beauty filter, skin smoothing, soft focus, glow, painterly effect, illustration style, colour grading, AI art look.`
+export const FACE_EDIT_LOCK = FACE_TRYON_LOCK
 
 /** Absolute no-filter rule — both pets and people, every style */
 export const NO_FILTER_FACE = `ZERO FILTERS ON FACES (mandatory — all categories):
@@ -150,10 +154,11 @@ export const PET_FACE_IDENTITY_EMPHASIS = `FINAL REMINDER — PET IDENTITY: Face
 export const FAMILY_FACE_IDENTITY_FIRST = `HIGHEST PRIORITY — IDENTITY (HUMANS). The customer MUST instantly recognize every person as themselves. This overrides all artistic style instructions below.
 
 FACE — must match the upload exactly:
-- Same face shape, jaw, cheeks, forehead, chin, eye shape and colour, nose, mouth, lips, eyebrows, skin tone, freckles, moles, wrinkles, and expression
-- Photorealistic skin — sharp, clear, completely unfiltered. NO oil paint, brushstrokes, soft focus, smoothing, beautification, glamour retouch, or "portrait painting" effect on any face
+- Same face shape, jaw, cheeks, forehead, chin, eye shape and colour, nose, mouth, lips, eyebrows, skin tone, freckles, moles, wrinkles, age appearance, and expression
+- Do NOT alter gender presentation, ethnicity, or any identifying facial attributes
+- Photorealistic skin — sharp, clear, completely unfiltered. NO smoothing, beautification, glamour retouch, or "portrait painting" effect
 - Natural skin texture with pores and real shadows — like a DSLR photo, not a magazine cover
-- Treat each face as a photograph composited unchanged onto the styled portrait — do NOT repaint faces
+- Treat each face as a photograph composited unchanged — do NOT repaint faces
 
 HAIR — must match the upload exactly:
 - Same hair colour, length, cut, texture, curl, volume, parting, fringe/bangs, and style as the original photo

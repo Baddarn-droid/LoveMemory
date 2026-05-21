@@ -11,21 +11,14 @@ import {
   FACE_PRESERVATION_EMPHASIS,
   LIGHT_TOUCH_EDIT,
   FULL_FRAME_INSTRUCTION,
-  PET_COMPOSITION_FIRST,
-  PET_FACE_CENTER,
-  PET_FRAMING_OVERRIDE,
-  PET_HEADROOM,
   PET_FACE_IDENTITY_FIRST,
   PET_FACE_IDENTITY_EMPHASIS,
-  FAMILY_COMPOSITION_FIRST,
-  FAMILY_FRAMING_OVERRIDE,
-  FAMILY_HEADROOM,
   FAMILY_EXACT_PEOPLE_COUNT,
   FAMILY_FACE_IDENTITY_FIRST,
   FAMILY_FACE_IDENTITY_EMPHASIS,
+  FACE_TRYON_LOCK,
   FACE_EDIT_LOCK,
   NO_FILTER_FACE,
-  PHOTOREALISTIC_WHOLE_IMAGE,
   PERIOD_CLOTHING_FIT,
   PET_COLLAR_FIT,
   type CategoryId,
@@ -39,40 +32,23 @@ ${LIGHT_TOUCH_EDIT}`
 
 /** Identity + light-touch prefix — same structure for pets and family on every style */
 function buildIdentityPrefix(categoryId: CategoryId): string {
-  const core = [FACE_EDIT_LOCK, PHOTOREALISTIC_WHOLE_IMAGE, NO_FILTER_FACE, LIGHT_TOUCH_EDIT]
+  const core = [FACE_TRYON_LOCK, FACE_EDIT_LOCK, NO_FILTER_FACE, LIGHT_TOUCH_EDIT]
   if (categoryId === 'pets') {
-    return [...core, PET_FACE_IDENTITY_FIRST, FACE_PRESERVATION, PET_COMPOSITION_FIRST].join('\n\n')
+    return [...core, PET_FACE_IDENTITY_FIRST, FACE_PRESERVATION].join('\n\n')
   }
-  return [
-    ...core,
-    FAMILY_FACE_IDENTITY_FIRST,
-    FACE_PRESERVATION,
-    FAMILY_EXACT_PEOPLE_COUNT,
-    FAMILY_COMPOSITION_FIRST,
-  ].join('\n\n')
+  return [...core, FAMILY_FACE_IDENTITY_FIRST, FACE_PRESERVATION, FAMILY_EXACT_PEOPLE_COUNT].join('\n\n')
 }
 
 /** Final identity reminders — both categories */
 function buildIdentitySuffix(categoryId: CategoryId): string {
   const parts: string[] = []
   if (categoryId === 'pets') {
-    parts.push(PET_FACE_IDENTITY_EMPHASIS, PET_FACE_CENTER, PET_HEADROOM)
+    parts.push(PET_FACE_IDENTITY_EMPHASIS)
   }
   if (categoryId === 'family') {
-    parts.push(
-      FAMILY_EXACT_PEOPLE_COUNT,
-      FAMILY_HEADROOM,
-      'COMPOSITION: Gallery-worthy, balanced. Everyone in the picture must be fully visible.',
-      FAMILY_FACE_IDENTITY_EMPHASIS
-    )
+    parts.push(FAMILY_EXACT_PEOPLE_COUNT, FAMILY_FACE_IDENTITY_EMPHASIS)
   }
-  parts.push(
-    PHOTOREALISTIC_WHOLE_IMAGE,
-    FACE_EDIT_LOCK,
-    FACE_PRESERVATION_EMPHASIS,
-    NO_FILTER_FACE,
-    LIGHT_TOUCH_EDIT
-  )
+  parts.push(FACE_TRYON_LOCK, FACE_PRESERVATION_EMPHASIS, NO_FILTER_FACE)
   return parts.join('\n\n')
 }
 
@@ -101,29 +77,14 @@ export function buildPortraitPrompt(options: {
 
   if (categoryId && styleId) {
     prompt = prompt + '\n\n' + FULL_FRAME_INSTRUCTION
-    if (categoryId === 'pets') {
-      prompt = prompt + '\n\n' + PET_FRAMING_OVERRIDE
-    }
-    if (categoryId === 'family') {
-      prompt = prompt + '\n\n' + FAMILY_FRAMING_OVERRIDE
-    }
   }
 
-  if (categoryId === 'pets') {
-    prompt =
-      prompt +
-      '\n\n' +
-      PET_FACE_CENTER +
-      '\n\n' +
-      PET_HEADROOM +
-      '\n\nCOMPOSITION: Full or three-quarter view; not too zoomed in. Gallery-worthy, balanced composition.'
-    if (petPose) {
-      const poseInstruction =
-        petPose === 'standing'
-          ? ' Pose the pet STANDING upright, facing the viewer, dignified noble stance.'
-          : ' Pose the pet LAYING DOWN on a luxurious velvet cushion or pillow, relaxed and regal, surrounded by rich fabric.'
-      prompt = prompt + poseInstruction
-    }
+  if (categoryId === 'pets' && petPose) {
+    const poseInstruction =
+      petPose === 'standing'
+        ? ' Pose the pet STANDING upright, facing the viewer, dignified noble stance.'
+        : ' Pose the pet LAYING DOWN on a luxurious velvet cushion or pillow, relaxed and regal, surrounded by rich fabric.'
+    prompt = prompt + poseInstruction
   }
 
   if (colourOptionId) {
