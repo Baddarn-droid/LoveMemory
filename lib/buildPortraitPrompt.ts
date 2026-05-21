@@ -7,6 +7,8 @@ import {
   getStylePreset,
   getClothingPromptText,
   getColourPromptText,
+  getStyleThemeLockPrompt,
+  PET_STYLE_SUFFIX,
   FACE_PRESERVATION,
   FACE_PRESERVATION_EMPHASIS,
   LIGHT_TOUCH_EDIT,
@@ -62,13 +64,14 @@ export function buildPortraitPrompt(options: {
 }): string {
   const { categoryId, styleId, subStyleId, colourOptionId, petPose, clothingChoices } = options
   const stylePreset = getStylePreset(categoryId, styleId)
+  const styleTitle = stylePreset?.title ?? styleId
 
   let prompt = buildIdentityPrefix(categoryId) + '\n\n'
 
-  if (stylePreset?.title) {
-    prompt +=
-      `SELECTED STYLE: "${stylePreset.title}" (id: ${styleId}). Match this style on clothing and background only — never on faces or fur.\n\n`
-  }
+  prompt += getStyleThemeLockPrompt(styleId, styleTitle) + '\n\n'
+
+  prompt +=
+    `SELECTED STYLE: "${styleTitle}" (id: ${styleId}). Match this style on clothing and background only — never on faces or fur.\n\n`
 
   prompt += (getStylePrompt(categoryId, styleId, subStyleId) || DEFAULT_PROMPT) + ''
 
@@ -87,8 +90,12 @@ export function buildPortraitPrompt(options: {
     prompt = prompt + poseInstruction
   }
 
+  if (categoryId === 'pets') {
+    prompt = prompt + '\n\n' + PET_STYLE_SUFFIX
+  }
+
   if (colourOptionId) {
-    prompt = prompt + getColourPromptText(colourOptionId)
+    prompt = prompt + getColourPromptText(colourOptionId, styleTitle)
   }
   if (categoryId && clothingChoices && Object.keys(clothingChoices).length > 0) {
     prompt = prompt + getClothingPromptText(categoryId, clothingChoices)

@@ -344,6 +344,160 @@ export function getAllStyleIdsForCategory(categoryId: CategoryId): string[] {
 
 export const CATEGORY_SLUGS = CATEGORIES.map((c) => c.slug) as string[]
 
+export interface StyleThemeDefinition {
+  era: string
+  setting: string
+  clothing: string
+  forbidden: string[]
+}
+
+/** Per-style theme lock — ensures correct era/setting for every style ID (pets + family) */
+export const STYLE_THEME_DEFINITIONS: Record<string, StyleThemeDefinition> = {
+  renaissance: {
+    era: '15th–16th century European Renaissance noble portrait',
+    setting: 'Classical dark studio, charcoal backdrop, or restrained noble interior',
+    clothing: 'Velvet robes, silk brocade, gold chains, pearl jewellery, modest lace — period silhouettes only',
+    forbidden: ['Victorian 19th century', 'British tweed', 'Rococo pastels', 'modern clothing'],
+  },
+  'baroque-royal': {
+    era: '17th-century Baroque European royal court',
+    setting: 'Opulent court interior, velvet drapes, dramatic shadowed backdrop',
+    clothing: 'Crimson/deep velvet, gold brocade, white lace collars or modest ruffs, jewel tones',
+    forbidden: ['Victorian fashion', 'Renaissance Florentine soft pastels', 'Rococo lightness', 'modern dress'],
+  },
+  'rococo-elegance': {
+    era: '18th-century French Rococo court',
+    setting: 'Light airy salon, pale decorative interior, playful ornate backdrop',
+    clothing: 'Pale silk, pink satin, cream brocade, ribbons, lace — soft pastels on garments',
+    forbidden: ['Victorian dark formality', 'Renaissance heavy velvet', 'Baroque crimson drama', 'modern clothing'],
+  },
+  'victorian-era': {
+    era: 'Victorian era Britain (c. 1837–1901) cabinet photograph',
+    setting: 'Moody Victorian studio, dark parlour, or restrained interior — NOT Renaissance halos',
+    clothing: 'Dark wool, frock coats, bustled silhouettes, muted navy/burgundy/charcoal, cravat inside collar',
+    forbidden: ['Renaissance gold brocade', 'Elizabethan ruffs', 'Rococo pastels', 'Baroque theatre'],
+  },
+  edwardian: {
+    era: 'Edwardian British aristocracy (early 20th century, c. 1901–1914)',
+    setting: 'English country estate, garden terrace, or bright drawing room',
+    clothing: 'Tailored Edwardian suits, long elegant dresses, lace, straw hats, light natural fabrics',
+    forbidden: ['Heavy Victorian industrial gloom', 'Renaissance court dress', 'modern casual wear'],
+  },
+  'dutch-golden': {
+    era: 'Dutch Golden Age (17th century, Rembrandt era)',
+    setting: 'Dark studio with single warm light source, deep shadow',
+    clothing: 'Black garments, white collars, warm brown tones, simple dignified dress',
+    forbidden: ['Victorian bustles', 'Rococo pastels', 'Renaissance Florentine colours'],
+  },
+  'pre-raphaelite': {
+    era: 'British Pre-Raphaelite movement (19th century)',
+    setting: 'Nature backdrop, tapestry, or medieval-inspired garden — British romantic',
+    clothing: 'Flowing medieval-inspired garments, jewel tones, rich embroidery — NOT generic Renaissance court',
+    forbidden: ['Generic Renaissance court', 'Baroque opulence', 'Victorian formal studio only'],
+  },
+  'british-aristocracy': {
+    era: 'British English aristocracy (18th–19th century noble portrait)',
+    setting: 'English stately home, rolling parkland, library, or portrait gallery',
+    clothing: 'English noble dress — velvet, tweed, pearls, fur trim, hunting-inspired or formal British tailoring',
+    forbidden: ['French Rococo court', 'Italian Renaissance halos', 'American Western', 'modern streetwear'],
+  },
+  'royal-court': {
+    era: 'British/European royal court portrait',
+    setting: 'Palace throne room, royal gallery, or ceremonial court interior',
+    clothing: 'Formal court dress, ermine trim, medals, crown or tiara optional, regal ceremonial attire',
+    forbidden: ['Casual clothing', 'Rustic cottage', 'Dark academia study', 'modern dress'],
+  },
+  'country-manor': {
+    era: 'English landed gentry / country manor (Georgian–Victorian British)',
+    setting: 'English manor house, estate grounds, oak-panelled hall, or countryside vista',
+    clothing: 'Refined country attire — riding coats, tweed, cravat, practical yet elegant British country dress',
+    forbidden: ['French court Rococo', 'Urban industrial Victorian', 'fantasy armour'],
+  },
+  'heritage-museum': {
+    era: 'English Heritage / National Portrait Gallery formal display',
+    setting: 'Museum-quality neutral backdrop, gallery wall, or heritage display aesthetic — British institutional portrait',
+    clothing: 'Formal historical British attire appropriate to a heritage museum portrait collection',
+    forbidden: ['Cartoon illustration', 'Fantasy costume', 'Casual modern clothing', 'French Rococo frivolity'],
+  },
+  'dark-academia-scholar': {
+    era: 'Dark Academia scholarly aesthetic',
+    setting: 'Dark wood library, study with stacked books, warm lamplight, gothic university interior',
+    clothing: 'Tweed blazers, turtlenecks, wool coats, scholarly muted tones — intellectual moody dress',
+    forbidden: ['Bright Rococo pastels', 'Royal court ceremony', 'Outdoor country estate sunshine only'],
+  },
+  'oxford-don': {
+    era: 'Oxford University academic portrait (British)',
+    setting: 'Oxford college library, stone quad, or wood-panelled senior common room',
+    clothing: 'Academic tweed, gown optional, distinguished British scholarly dress, spectacles acceptable',
+    forbidden: ['French court dress', 'Fantasy medieval armour', 'Casual sportswear'],
+  },
+  'classic-storybook': {
+    era: 'Classic British storybook theme (photorealistic, not illustrated)',
+    setting: 'Charming English storybook scene — cottage garden, woodland glade, or cosy period interior',
+    clothing: 'Whimsical but period-appropriate storybook costume — photorealistic fabric textures',
+    forbidden: ['Cartoon illustration style', 'Flat drawn look', 'Modern clothing'],
+  },
+  'fairytale-art': {
+    era: 'Fairytale enchanted theme (photorealistic photograph)',
+    setting: 'Enchanted forest glade, castle fairytale backdrop, magical but photographic environment',
+    clothing: 'Fairytale period costume — elegant, magical setting, photorealistic NOT illustrated',
+    forbidden: ['Cartoon illustration', 'Anime style', 'Modern clothing'],
+  },
+  'hand-painted-watercolour': {
+    era: 'Soft watercolour-inspired palette (photorealistic photo, NOT a painting)',
+    setting: 'Gentle dreamy backdrop with soft pastel environmental tones — still a real photograph',
+    clothing: 'Delicate period garments in pale washes of colour — photorealistic fabric, not paint strokes',
+    forbidden: ['Visible brushstrokes on face', 'Watercolour illustration effect', 'Modern dress'],
+  },
+  'soft-pastel': {
+    era: 'Soft pastel colour theme (photorealistic)',
+    setting: 'Light airy backdrop in pale pink, mint, cream, or lavender tones',
+    clothing: 'Period garments in soft pastel palette — photorealistic, not chalk illustration',
+    forbidden: ['Dark Baroque drama', 'Heavy Victorian black', 'Illustrated cartoon look'],
+  },
+  'whimsical-fantasy': {
+    era: 'Whimsical fantasy theme (photorealistic)',
+    setting: 'Playful fantasy environment — enchanted garden, soft magical landscape, photographic',
+    clothing: 'Fantasy-inflected period costume, playful but photorealistic',
+    forbidden: ['Horror dark tones', 'Modern streetwear', 'Flat illustration'],
+  },
+  'high-fantasy-kingdom': {
+    era: 'High fantasy medieval kingdom (photorealistic)',
+    setting: 'Castle ramparts, mountain kingdom, epic fantasy landscape — cinematic photographic',
+    clothing: 'Noble medieval fantasy attire, regal capes, kingdom dress — not modern',
+    forbidden: ['Modern clothing', 'Victorian parlour', 'Rococo French court'],
+  },
+  'legendary-warrior': {
+    era: 'Legendary fantasy warrior (photorealistic)',
+    setting: 'Epic battlefield, ancient fortress, or heroic fantasy landscape',
+    clothing: 'Battle-worn fantasy armour or warrior garb appropriate to legendary hero portrait',
+    forbidden: ['Modern military uniform', 'Business suit', 'Rococo court dress'],
+  },
+}
+
+export function getStyleThemeLockPrompt(styleId: string, styleTitle: string): string {
+  const def = STYLE_THEME_DEFINITIONS[styleId]
+  if (!def) {
+    return `STYLE LOCK — "${styleTitle}": The output MUST unmistakably match ${styleTitle} on clothing and background. Do not mix other historical periods.`
+  }
+  const forbidden =
+    def.forbidden.length > 0
+      ? `\nFORBIDDEN (wrong theme — do NOT use): ${def.forbidden.join('; ')}.`
+      : ''
+  return `STYLE LOCK — "${styleTitle}" (mandatory — do not ignore):
+ERA: ${def.era}
+BACKGROUND/SETTING: ${def.setting}
+CLOTHING & PROPS: ${def.clothing}
+The finished portrait MUST be instantly recognisable as "${styleTitle}".${forbidden}`
+}
+
+/** Pet-specific instructions appended for every pet style */
+export const PET_STYLE_SUFFIX = `FOR PETS (mandatory):
+- Face, fur, and markings on the head must remain identical to the upload
+- Dress the pet in miniature costume OR place on velvet cushion — matching the selected style era above
+- Small jewelled collar at neck only if appropriate — never covering eyes or muzzle
+- Background must match the selected style theme — not a generic studio`
+
 /**
  * Style library entry - searchable across all categories.
  */
@@ -409,37 +563,37 @@ Replace clothing and background only. Photorealistic unfiltered photograph — z
     id: 'royal-elite',
     title: 'Royal & British Heritage',
     styles: [
-      { id: 'british-aristocracy', title: 'British Aristocracy', description: 'Regal British noble style.', searchKeywords: ['british', 'aristocracy', 'noble', 'regal'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as British aristocracy portrait. Regal noble attire. Velvet, fur trim, pearls. Country estate background. Replace clothing and background only.') },
-      { id: 'royal-court', title: 'Royal Court Portrait', description: 'Grand royal court style.', searchKeywords: ['royal', 'court', 'crown', 'throne'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as royal court portrait. Crown or tiara. Formal court attire. Throne room or palace. Replace clothing and background only.') },
-      { id: 'country-manor', title: 'Country Manor Painting', description: 'Estate manor portrait style.', searchKeywords: ['country', 'manor', 'estate', 'landed'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as country manor portrait. Landed gentry style. Refined country attire. Manor house background. Replace clothing and background only.') },
-      { id: 'heritage-museum', title: 'Heritage Museum Display', description: 'Museum-quality heritage portrait.', searchKeywords: ['heritage', 'museum', 'display', 'gallery'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as heritage museum portrait. Gallery-quality. Formal historical attire. Museum display aesthetic. Replace clothing and background only.') },
+      { id: 'british-aristocracy', title: 'British Aristocracy', description: 'Regal British noble style.', searchKeywords: ['british', 'aristocracy', 'noble', 'regal'], promptText: eraStylePrompt('British English aristocracy portrait', 'Edit photo: style clothing and background as British English aristocracy. English noble attire — velvet, tweed, pearls, fur trim. Stately home, rolling parkland, or portrait gallery background. Replace clothing and background only.', ['French Rococo', 'Italian Renaissance court', 'American Western', 'modern clothing']) },
+      { id: 'royal-court', title: 'Royal Court Portrait', description: 'Grand royal court style.', searchKeywords: ['royal', 'court', 'crown', 'throne'], promptText: eraStylePrompt('Royal court portrait', 'Edit photo: style clothing and background as royal court portrait. Formal ceremonial court dress, ermine trim, crown or tiara optional. Palace throne room or royal gallery. Replace clothing and background only.', ['Casual wear', 'Rustic cottage', 'Dark academia study', 'modern dress']) },
+      { id: 'country-manor', title: 'Country Manor Painting', description: 'Estate manor portrait style.', searchKeywords: ['country', 'manor', 'estate', 'landed'], promptText: eraStylePrompt('English country manor / landed gentry portrait', 'Edit photo: style clothing and background as English country manor portrait. Landed gentry attire — tweed, riding coat, cravat. Manor house, estate grounds, or oak-panelled hall. Replace clothing and background only.', ['French Rococo court', 'Urban Victorian factory setting', 'fantasy armour']) },
+      { id: 'heritage-museum', title: 'Heritage Museum Display', description: 'Museum-quality heritage portrait.', searchKeywords: ['heritage', 'museum', 'display', 'gallery'], promptText: eraStylePrompt('English Heritage / museum gallery portrait', 'Edit photo: style clothing and background as English Heritage museum portrait. Formal historical British attire. Neutral gallery backdrop or heritage display aesthetic like the National Portrait Gallery. Replace clothing and background only.', ['Cartoon illustration', 'Fantasy costume', 'Casual modern clothing', 'Rococo frivolity']) },
     ],
   },
   {
     id: 'dark-academia',
     title: 'Dark Academia & Intellectual',
     styles: [
-      { id: 'dark-academia-scholar', title: 'Dark Academia Scholar', description: 'Moody scholarly portrait.', searchKeywords: ['dark academia', 'scholar', 'moody', 'intellectual'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as Dark Academia scholar portrait. Moody, scholarly. Books, tweed, warm lamplight. Library or study. Replace clothing and background only.') },
-      { id: 'oxford-don', title: 'Oxford Don Aesthetic', description: 'Academic Oxford don style.', searchKeywords: ['oxford', 'don', 'academic', 'british'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as Oxford don portrait. Academic, distinguished. Tweed, spectacles. University library. Replace clothing and background only.') },
+      { id: 'dark-academia-scholar', title: 'Dark Academia Scholar', description: 'Moody scholarly portrait.', searchKeywords: ['dark academia', 'scholar', 'moody', 'intellectual'], promptText: eraStylePrompt('Dark Academia scholar portrait', 'Edit photo: style clothing and background as Dark Academia scholar. Tweed, wool coats, turtlenecks. Dark wood library, stacked books, warm lamplight. Replace clothing and background only.', ['Bright Rococo pastels', 'Royal court ceremony', 'Outdoor sunny estate only']) },
+      { id: 'oxford-don', title: 'Oxford Don Aesthetic', description: 'Academic Oxford don style.', searchKeywords: ['oxford', 'don', 'academic', 'british'], promptText: eraStylePrompt('Oxford don academic portrait (British)', 'Edit photo: style clothing and background as Oxford don portrait. Academic tweed, distinguished scholarly dress. Oxford college library or stone quad. Replace clothing and background only.', ['French court dress', 'Fantasy armour', 'Casual sportswear']) },
     ],
   },
   {
     id: 'storybook-whimsical',
     title: 'Storybook & Whimsical',
     styles: [
-      { id: 'classic-storybook', title: 'Classic Storybook Illustration', description: 'Beloved children\'s book style.', searchKeywords: ['storybook', 'illustration', 'children', 'classic'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background with classic storybook theme. Whimsical period costume and charming storybook-style background. Photorealistic photograph — NOT an illustration. Replace clothing and background only.') },
-      { id: 'fairytale-art', title: "Children's Fairytale Art", description: 'Magical fairytale illustration.', searchKeywords: ['fairytale', 'children', 'magical', 'enchanted'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background with fairytale theme. Magical period costume and enchanted background setting. Photorealistic photograph — NOT an illustration. Replace clothing and background only.') },
-      { id: 'hand-painted-watercolour', title: 'Hand-Painted Watercolour', description: 'Delicate watercolour washes.', searchKeywords: ['watercolour', 'watercolor', 'hand painted', 'soft'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background with soft watercolour-inspired pastel theme colours. Photorealistic photograph — NOT a watercolour painting. Replace clothing and background only.') },
-      { id: 'soft-pastel', title: 'Soft Pastel Illustration', description: 'Gentle pastel tones.', searchKeywords: ['pastel', 'soft', 'gentle', 'dreamy'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background with soft pastel theme colours. Photorealistic photograph — NOT an illustration. Replace clothing and background only.') },
-      { id: 'whimsical-fantasy', title: 'Whimsical Fantasy', description: 'Playful fantasy style.', searchKeywords: ['whimsical', 'fantasy', 'playful', 'magical'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background with whimsical fantasy theme. Playful period costume and fantasy background. Photorealistic photograph — no filters. Replace clothing and background only.') },
+      { id: 'classic-storybook', title: 'Classic Storybook Illustration', description: 'Beloved children\'s book style.', searchKeywords: ['storybook', 'illustration', 'children', 'classic'], promptText: eraStylePrompt('Classic British storybook theme (photorealistic)', 'Edit photo: style clothing and background with classic storybook theme. Charming English cottage garden, woodland glade, or cosy period interior. Whimsical period costume — photorealistic fabric. NOT a flat illustration. Replace clothing and background only.', ['Cartoon illustration style', 'Flat drawn look', 'Modern clothing']) },
+      { id: 'fairytale-art', title: "Children's Fairytale Art", description: 'Magical fairytale illustration.', searchKeywords: ['fairytale', 'children', 'magical', 'enchanted'], promptText: eraStylePrompt('Fairytale enchanted theme (photorealistic)', 'Edit photo: style clothing and background with fairytale theme. Enchanted forest glade or castle fairytale backdrop. Elegant magical period costume — photorealistic photograph, NOT illustrated. Replace clothing and background only.', ['Cartoon illustration', 'Anime style', 'Modern clothing']) },
+      { id: 'hand-painted-watercolour', title: 'Hand-Painted Watercolour', description: 'Delicate watercolour washes.', searchKeywords: ['watercolour', 'watercolor', 'hand painted', 'soft'], promptText: eraStylePrompt('Soft watercolour-inspired palette (photorealistic photo)', 'Edit photo: style clothing and background with soft watercolour-inspired pastel environmental tones. Gentle dreamy backdrop, delicate period garments in pale washes — still a real photograph, NOT paint strokes on the face. Replace clothing and background only.', ['Visible brushstrokes on face', 'Watercolour illustration effect', 'Modern dress']) },
+      { id: 'soft-pastel', title: 'Soft Pastel Illustration', description: 'Gentle pastel tones.', searchKeywords: ['pastel', 'soft', 'gentle', 'dreamy'], promptText: eraStylePrompt('Soft pastel colour theme (photorealistic)', 'Edit photo: style clothing and background with soft pastel theme. Light airy backdrop in pale pink, mint, cream, or lavender. Period garments in soft pastels — photorealistic, NOT chalk illustration. Replace clothing and background only.', ['Dark Baroque drama', 'Heavy Victorian black', 'Illustrated cartoon look']) },
+      { id: 'whimsical-fantasy', title: 'Whimsical Fantasy', description: 'Playful fantasy style.', searchKeywords: ['whimsical', 'fantasy', 'playful', 'magical'], promptText: eraStylePrompt('Whimsical fantasy theme (photorealistic)', 'Edit photo: style clothing and background with whimsical fantasy theme. Playful enchanted garden or soft magical landscape. Fantasy-inflected period costume — photorealistic photograph. Replace clothing and background only.', ['Horror dark tones', 'Modern streetwear', 'Flat illustration']) },
     ],
   },
   {
     id: 'fantasy-classic',
     title: 'Classic Fantasy',
     styles: [
-      { id: 'high-fantasy-kingdom', title: 'High Fantasy Kingdom', description: 'Medieval fantasy world.', searchKeywords: ['high fantasy', 'kingdom', 'medieval', 'fantasy'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as high fantasy kingdom portrait. Medieval fantasy world. Noble or heroic attire. Castle, mountains. Photorealistic photograph — no filters. Replace clothing and background only.') },
-      { id: 'legendary-warrior', title: 'Legendary Warrior', description: 'Epic warrior portrait.', searchKeywords: ['legendary', 'warrior', 'epic', 'battle'], promptText: stylePrompt(FACE_PRESERVATION, 'Edit photo: style clothing and background as legendary warrior portrait. Epic battle attire. Heroic pose. Fantasy world. Photorealistic photograph — no filters. Replace clothing and background only.') },
+      { id: 'high-fantasy-kingdom', title: 'High Fantasy Kingdom', description: 'Medieval fantasy world.', searchKeywords: ['high fantasy', 'kingdom', 'medieval', 'fantasy'], promptText: eraStylePrompt('High fantasy medieval kingdom (photorealistic)', 'Edit photo: style clothing and background as high fantasy kingdom portrait. Castle ramparts, mountain kingdom, epic cinematic landscape. Noble medieval fantasy attire, regal capes — not modern dress. Photorealistic photograph. Replace clothing and background only.', ['Modern clothing', 'Victorian parlour', 'Rococo French court']) },
+      { id: 'legendary-warrior', title: 'Legendary Warrior', description: 'Epic warrior portrait.', searchKeywords: ['legendary', 'warrior', 'epic', 'battle'], promptText: eraStylePrompt('Legendary fantasy warrior (photorealistic)', 'Edit photo: style clothing and background as legendary warrior portrait. Epic battlefield or ancient fortress backdrop. Battle-worn fantasy armour or heroic warrior garb. Photorealistic photograph. Replace clothing and background only.', ['Modern military uniform', 'Business suit', 'Rococo court dress']) },
     ],
   },
 ]
@@ -508,10 +662,17 @@ export const COLOUR_OPTIONS: ColourOption[] = [
   { id: 'soft-pastels', label: 'Soft Pastels', promptText: 'Use a soft pastel colour palette (pale pink, mint, cream, lavender) for clothing and background. Photorealistic — no soft filters.', colors: ['#E8A0A0', '#98D8AA', '#FFF8E7', '#E6E6FA', '#F5DEB3'] },
 ]
 
-export function getColourPromptText(colourOptionId: string | undefined): string {
+export function getColourPromptText(
+  colourOptionId: string | undefined,
+  styleTitle?: string
+): string {
   if (!colourOptionId || colourOptionId === 'style-default') return ''
   const opt = COLOUR_OPTIONS.find((c) => c.id === colourOptionId)
-  return opt?.promptText ? `\n\nCOLOUR PALETTE: ${opt.promptText}` : ''
+  if (!opt?.promptText) return ''
+  const styleNote = styleTitle
+    ? ` Apply these colours to clothing, fabrics, trim, and background ONLY — keep the "${styleTitle}" era, silhouettes, and setting exactly as locked above.`
+    : ' Apply to clothing, fabrics, and background only — do not change the historical era or style theme.'
+  return `\n\nCOLOUR PALETTE (mandatory — user selected "${opt.label}"):\n${opt.promptText}${styleNote}`
 }
 
 /** Neutral defaults — only applied when user leaves options unchanged */
