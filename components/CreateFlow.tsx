@@ -252,7 +252,11 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
           className="flex flex-col items-center text-center"
         >
           <h3 className="mb-2 text-xl font-semibold text-white">Upload Your Photo</h3>
-          <p className="mb-6 text-sm text-white/50">Preview your portrait for free — only pay when you love it</p>
+          <p className="mb-3 text-sm text-white/50">Preview your portrait for free — only pay when you love it</p>
+          <p className="mb-6 max-w-md text-xs leading-relaxed text-amber-200/75">
+            <strong className="font-semibold text-amber-200">Photo quality matters.</strong> A clear, well-lit picture
+            with your face in focus gives the best results — sharp, natural, and closest to how you really look.
+          </p>
           <input
             ref={fileInputRef}
             type="file"
@@ -277,7 +281,12 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
             <p className="text-lg font-medium text-white">Drop your photo here</p>
             <p className="mt-1 text-sm text-white/50">or click to browse</p>
             <p className="mt-4 text-xs text-white/30">JPG, PNG up to 10MB</p>
-            <p className="mt-3 max-w-xs text-xs text-white/40">
+            <ul className="mt-4 max-w-sm space-y-1 text-left text-xs text-white/45">
+              <li>• Face clearly visible, good lighting, in focus</li>
+              <li>• Head and shoulders works best — one person or pet</li>
+              <li>• Avoid heavy filters, blur, or sunglasses</li>
+            </ul>
+            <p className="mt-4 max-w-xs text-xs text-white/40">
               Generation usually takes{' '}
               <span className="text-amber-200/80">15–35 seconds</span> — period theme on clothes and background.
             </p>
