@@ -2,10 +2,13 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { getCategoryById } from '@/lib/styles'
+
+const familyLabel = getCategoryById('family')?.label ?? 'Family / Couple / Self-Portrait'
 
 const categories = [
   { id: 'pets', label: 'Pets', href: '/pets' },
-  { id: 'family', label: 'Family / Couple / Self-Portrait', href: '/family-couple' },
+  { id: 'family', label: familyLabel, href: '/family-couple' },
 ]
 
 export function CategoryTabs() {

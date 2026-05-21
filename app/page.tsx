@@ -4,7 +4,9 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useMemo } from 'react'
+import { getCategoryById } from '@/lib/styles'
 
+const familyCategory = getCategoryById('family')
 
 const trustBadges = [
   'Secure checkout',
@@ -13,7 +15,12 @@ const trustBadges = [
 
 const categories = [
   { id: 'pets', label: 'Pet Portraits', href: '/pets', emoji: '🐾' },
-  { id: 'family', label: 'Family / Couple / Self-Portrait', href: '/family-couple', emoji: '👨‍👩‍👧‍👦' },
+  {
+    id: 'family',
+    label: familyCategory?.label ?? 'Family / Couple / Self-Portrait',
+    href: '/family-couple',
+    emoji: '👨‍👩‍👧‍👦',
+  },
 ]
 
 const steps = [

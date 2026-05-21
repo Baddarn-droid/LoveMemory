@@ -281,6 +281,17 @@ export function getCategoryById(id: CategoryId): CategoryConfig | undefined {
   return categoryById.get(id)
 }
 
+/** Header / sidebar nav — family label always synced with CATEGORIES */
+export function getHeaderNavLinks(): { href: string; label: string }[] {
+  const familyLabel = getCategoryById('family')?.label ?? 'Family / Couple / Self-Portrait'
+  return [
+    { href: '/', label: 'Home' },
+    { href: '/pets', label: 'Pets' },
+    { href: '/family-couple', label: familyLabel },
+    { href: '/contact', label: 'Contact' },
+  ]
+}
+
 export function getStylesForCategory(categoryId: CategoryId): StylePreset[] {
   return getCategoryById(categoryId)?.styles ?? []
 }

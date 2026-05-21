@@ -2,12 +2,15 @@
 
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import { getCategoryById } from '@/lib/styles'
+
+const familyLabel = getCategoryById('family')?.label ?? 'Family / Couple / Self-Portrait'
 
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/#create', label: 'Create' },
   { href: '/pets', label: 'Pet Portraits' },
-  { href: '/family-couple', label: 'Family / Couple / Self-Portrait' },
+  { href: '/family-couple', label: familyLabel },
   { href: '/contact', label: 'Contact' },
   { href: '/auth', label: 'Sign In' },
 ]

@@ -4,13 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
-
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/pets', label: 'Pets' },
-  { href: '/family-couple', label: 'Family / Couple / Self-Portrait' },
-  { href: '/contact', label: 'Contact' },
-]
+import { getHeaderNavLinks } from '@/lib/styles'
 
 function MenuIcon({ open }: { open: boolean }) {
   return (
@@ -25,6 +19,7 @@ function MenuIcon({ open }: { open: boolean }) {
 export function Header() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const pathname = usePathname()
+  const navLinks = getHeaderNavLinks()
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
@@ -48,9 +43,9 @@ export function Header() {
             const active = isActive(link.href)
             return (
               <Link
-                key={link.href + link.label}
+                key={link.href}
                 href={link.href}
-                className={`relative rounded-md px-3.5 py-2.5 text-[13px] tracking-[0.02em] transition-colors ${
+                className={`relative whitespace-nowrap rounded-md px-3 py-2.5 text-[12px] tracking-[0.02em] transition-colors lg:px-3.5 lg:text-[13px] ${
                   active ? 'text-amber-400' : 'text-offwhite/75 hover:bg-white/[0.04] hover:text-offwhite'
                 } ${active && link.href !== '/' && link.href !== '/contact' ? 'border-b-2 border-amber-500' : ''}`}
               >
@@ -83,7 +78,7 @@ export function Header() {
               const active = isActive(link.href)
               return (
                 <Link
-                  key={link.href + link.label}
+                  key={link.href}
                   href={link.href}
                   onClick={() => setMobileNavOpen(false)}
                   className={`flex items-center gap-2 border-b border-white/[0.04] px-5 py-4 text-[14px] tracking-[0.02em] ${
