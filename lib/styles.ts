@@ -249,9 +249,9 @@ FOR PETS SPECIFICALLY:
   },
   {
     id: 'family',
-    label: 'Family / Couple',
+    label: 'Family / Couple / Self-Portrait',
     slug: 'family-couple',
-    tagline: 'Your family or couple immortalized in classic style',
+    tagline: 'Your family, couple, or self-portrait immortalized in classic style',
     styles: [
       {
         id: 'renaissance',
@@ -327,7 +327,7 @@ export function getStylePreset(categoryId: CategoryId, styleId: string): StylePr
 
 /** Style-specific tagline for the style page (replaces category.tagline) */
 export function getStyleTagline(category: CategoryConfig, style: StylePreset | { title: string; description?: string }): string {
-  const subject = category.id === 'pets' ? 'beloved pet' : 'family or couple'
+  const subject = category.id === 'pets' ? 'beloved pet' : 'family, couple, or yourself'
   return `Your ${subject} in ${style.title} style`
 }
 

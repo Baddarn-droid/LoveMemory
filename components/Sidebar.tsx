@@ -7,7 +7,7 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/#create', label: 'Create' },
   { href: '/pets', label: 'Pet Portraits' },
-  { href: '/family-couple', label: 'Family / Couple Portraits' },
+  { href: '/family-couple', label: 'Family / Couple / Self-Portrait' },
   { href: '/contact', label: 'Contact' },
   { href: '/auth', label: 'Sign In' },
 ]

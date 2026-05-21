@@ -13,7 +13,7 @@ const trustBadges = [
 
 const categories = [
   { id: 'pets', label: 'Pet Portraits', href: '/pets', emoji: '🐾' },
-  { id: 'family', label: 'Family / Couple', href: '/family-couple', emoji: '👨‍👩‍👧‍👦' },
+  { id: 'family', label: 'Family / Couple / Self-Portrait', href: '/family-couple', emoji: '👨‍👩‍👧‍👦' },
 ]
 
 const steps = [

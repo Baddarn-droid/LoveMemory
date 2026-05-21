@@ -16,8 +16,8 @@ const PRODUCTS = {
     price: 2900,
   },
   family: {
-    name: 'Family / Couple Portrait',
-    description: 'AI-generated family or couple portrait - humans & multi-image uploads',
+    name: 'Family / Couple / Self-Portrait',
+    description: 'AI-generated family, couple, or self-portrait — humans & multi-image uploads',
     price: 2900,
   },
 }
