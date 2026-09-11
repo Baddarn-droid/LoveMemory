@@ -6,17 +6,29 @@ import type { CategoryId } from '@/lib/styles'
 import { buildPortraitPrompt } from '@/lib/buildPortraitPrompt'
 import { getApiBase } from '@/lib/apiBase'
 import type { PortraitOptions } from '@/components/PortraitCustomizer'
+import { FormatPreview } from '@/components/FormatPreview'
+import { GalleryWall } from '@/components/ProdigiClassicFrame'
+import {
+  DEFAULT_FRAME_COLOUR,
+  DEFAULT_FRAME_SIZE,
+  FRAME_COLOURS,
+  FRAME_FINISH,
+  FRAME_SIZES,
+  getFrameSize,
+  type FrameColourId,
+  type FrameSizeId,
+} from '@/lib/frameCatalog'
 
 const ACCEPT = 'image/*'
 
 /** Shown while OpenAI paints the portrait — updates by elapsed seconds */
 const GENERATE_STATUS_STEPS: { afterSec: number; label: string }[] = [
-  { afterSec: 0, label: 'Sending your photo to the studio…' },
-  { afterSec: 2, label: 'Applying your chosen style…' },
-  { afterSec: 4, label: 'Updating clothing and background…' },
-  { afterSec: 8, label: 'Keeping faces natural…' },
+  { afterSec: 0, label: 'Sending your photo…' },
+  { afterSec: 2, label: 'Choosing the wardrobe…' },
+  { afterSec: 4, label: 'Dressing the scene…' },
+  { afterSec: 8, label: 'Keeping it looking like them…' },
   { afterSec: 14, label: 'Almost there…' },
-  { afterSec: 22, label: 'Still working — thank you for your patience…' },
+  { afterSec: 22, label: 'Still working — hang tight…' },
 ]
 
 function getGenerateStatusMessage(elapsedSec: number): string {
@@ -54,6 +66,9 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [frameColour, setFrameColour] = useState<FrameColourId>(DEFAULT_FRAME_COLOUR)
+  const [frameSize, setFrameSize] = useState<FrameSizeId>(DEFAULT_FRAME_SIZE)
+  const [framePrices, setFramePrices] = useState<Record<string, string>>({})
   const lastPromptRef = useRef<string>('')
 
   const fileToBase64 = (file: File): Promise<string> =>
@@ -85,6 +100,25 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
     const id = setInterval(() => setGenerateElapsedSec((s) => s + 1), 1000)
     return () => clearInterval(id)
   }, [isGenerating])
+
+  useEffect(() => {
+    if (!generatedPreviewUrl) return
+    let cancelled = false
+    fetch(`${getApiBase() || ''}/api/frame-price`)
+      .then((res) => res.json())
+      .then((data: { sizes?: Array<{ id: string; display: string }> }) => {
+        if (cancelled || !data.sizes) return
+        const next: Record<string, string> = {}
+        for (const size of data.sizes) next[size.id] = size.display
+        setFramePrices(next)
+      })
+      .catch(() => {
+        if (!cancelled) setFramePrices({})
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [generatedPreviewUrl])
 
   const handleFile = useCallback((file: File | null) => {
     if (!file || !file.type.startsWith('image/')) return
@@ -190,6 +224,8 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
           subStyleId,
           petPose: effectivePetPose,
           option,
+          frameColor: option === 'framed' ? frameColour : undefined,
+          frameSize: option === 'download' ? undefined : frameSize,
         }),
       })
       const prepData = await prep.json()
@@ -199,7 +235,13 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
       const checkout = await fetch(`${apiBase}/api/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, option, returnUrl: typeof window !== 'undefined' ? window.location.href : undefined }),
+        body: JSON.stringify({
+          orderId,
+          option,
+          frameColor: option === 'framed' ? frameColour : undefined,
+          frameSize: option === 'download' ? undefined : frameSize,
+          returnUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+        }),
       })
       const checkoutData = await checkout.json()
       if (!checkout.ok) throw new Error(checkoutData.error || 'Checkout failed')
@@ -251,11 +293,11 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
           animate={{ opacity: 1 }}
           className="flex flex-col items-center text-center"
         >
-          <h3 className="mb-2 text-xl font-semibold text-white">Upload Your Photo</h3>
-          <p className="mb-3 text-sm text-white/50">Preview your portrait for free — only pay when you love it</p>
+          <h3 className="mb-2 text-xl font-semibold text-white">Drop in a photo</h3>
+          <p className="mb-3 text-sm text-white/50">See the gift first — you only pay if you want to keep it</p>
           <p className="mb-6 max-w-md text-xs leading-relaxed text-amber-200/75">
             <strong className="font-semibold text-amber-200">Photo quality matters.</strong> A clear, well-lit picture
-            with your face in focus gives the best results — sharp, natural, and closest to how you really look.
+            with {categoryId === 'pets' ? 'your pet' : 'your face'} in focus gives the best results.
           </p>
           <input
             ref={fileInputRef}
@@ -306,7 +348,7 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
             <img
               src={uploadPreviewUrl!}
               alt="Your photo"
-              className="h-48 w-48 rounded-xl object-cover shadow-lg"
+              className="h-52 w-52 rounded-xl bg-charcoal object-contain shadow-lg"
             />
             <button
               onClick={reset}
@@ -384,219 +426,114 @@ export function CreateFlow({ categoryId, styleId, subStyleId, portraitOptions }:
           className="w-full"
         >
           <h2 className="mb-2 text-center text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-satoshi)' }}>
-            Your Masterpiece is Ready!
+            Looks like them. Ready to gift.
           </h2>
           <p className="mb-8 text-center text-sm text-white/45">
-            Watermarked preview — purchase to download without watermark
+            Preview is watermarked. Choose a size, then checkout.
           </p>
 
-          {/* Preview with watermark and edit buttons */}
-          <div className="relative mx-auto mb-12 w-full max-w-md">
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] shadow-2xl">
-              <img
+          <div className={`relative mx-auto mb-8 w-full ${getFrameSize(frameSize).id === 'small' ? 'max-w-sm' : 'max-w-lg'}`}>
+            <GalleryWall className="rounded-2xl px-8 py-10 sm:px-12">
+              <FormatPreview
                 src={generatedPreviewUrl!}
-                alt="Your portrait"
-                className="w-full object-contain"
+                variant="framed"
+                frameColour={frameColour}
+                size="hero"
+                aspect={getFrameSize(frameSize).aspect}
               />
-              {/* Watermark overlay */}
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div className="grid grid-cols-2 gap-8 opacity-30">
-                  {Array.from({ length: 12 }).map((_, i) => (
-                    <span key={i} className="rotate-[-25deg] text-2xl font-bold tracking-wider text-white/40">
-                      LOVEMEMORY
-                    </span>
-                  ))}
-                </div>
+            </GalleryWall>
+            <div className="pointer-events-none absolute inset-[18%] flex items-center justify-center">
+              <div className="grid grid-cols-2 gap-10 opacity-[0.14]">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <span key={i} className="rotate-[-25deg] text-lg font-bold tracking-wider text-white">
+                    LOVEMEMORY
+                  </span>
+                ))}
               </div>
             </div>
-            {/* Retry/Edit buttons */}
-            <div className="absolute right-3 top-3 flex gap-2">
-              <button
-                onClick={reset}
-                className="rounded-full bg-black/60 p-2 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/80"
-                title="Retry or Edit"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </button>
-            </div>
+            <button
+              onClick={reset}
+              className="absolute right-4 top-4 rounded-full bg-black/55 p-2 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/80"
+              title="Retry or Edit"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
           </div>
 
-          {/* Choose Your Format */}
-          <h3 className="mb-6 text-center text-xl font-semibold text-white">Choose Your Format</h3>
+          <div className="mx-auto mb-5 grid max-w-lg gap-3 sm:grid-cols-2">
+            {FRAME_SIZES.map((size) => {
+              const selected = frameSize === size.id
+              return (
+                <button
+                  key={size.id}
+                  type="button"
+                  onClick={() => setFrameSize(size.id)}
+                  className={`rounded-2xl border px-4 py-4 text-left transition-colors ${
+                    selected ? 'border-amber-400/70 bg-amber-400/10' : 'border-white/10 hover:border-white/25'
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-white">{size.label}</p>
+                  <p className="mt-1 text-xs text-white/50">{size.hint}</p>
+                  <p className="mt-3 text-2xl font-bold text-white">{framePrices[size.id] ?? '…'}</p>
+                  <p className="text-[11px] text-white/40">UK shipping included</p>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mx-auto mb-8 max-w-md">
+              <p className="mb-3 text-center text-xs font-medium uppercase tracking-widest text-white/45">Frame colour</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {FRAME_COLOURS.map((colour) => {
+                  const selected = frameColour === colour.id
+                  return (
+                    <button
+                      key={colour.id}
+                      type="button"
+                      onClick={() => setFrameColour(colour.id)}
+                      className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                        selected
+                          ? 'border-amber-400/60 bg-amber-400/15 text-white'
+                          : 'border-white/10 text-white/65 hover:border-white/25'
+                      }`}
+                    >
+                      <span
+                        className="h-4 w-4 border border-black/30"
+                        style={{ background: FRAME_FINISH[colour.id].wood }}
+                        aria-hidden
+                      />
+                      {colour.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
 
           {checkoutError && (
-            <div className="mb-6 rounded-lg bg-red-500/10 px-4 py-3 text-center text-sm text-red-400">
+            <div className="mx-auto mb-6 max-w-md rounded-lg bg-red-500/10 px-4 py-3 text-center text-sm text-red-400">
               {checkoutError}
             </div>
           )}
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {/* Digital Download */}
-            <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-              <div className="mb-4 flex items-start justify-between">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400">
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                  </svg>
-                  Most Popular
-                </div>
-              </div>
-              <h4 className="mb-2 text-lg font-bold text-white">Instant Masterpiece</h4>
-              <p className="mb-4 text-sm text-white/50">Instant high-resolution download — perfect for sharing or saving.</p>
-              <div className="mb-4">
-                <span className="text-3xl font-bold text-white">TBD</span>
-              </div>
-              <ul className="mb-6 space-y-2 text-sm text-white/70">
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  High-resolution download
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  No watermark
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Commercial use rights
-                </li>
-              </ul>
-              <button
-                onClick={() => handleCheckout('download')}
-                disabled={checkoutLoading !== null}
-                className="w-full rounded-full bg-white py-3 font-semibold text-black transition-colors hover:bg-white/90 disabled:cursor-wait disabled:opacity-70"
-              >
-                {checkoutLoading === 'download' ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Processing...
-                  </span>
-                ) : (
-                  'Download Now'
-                )}
-              </button>
-            </div>
-            {/* Fine Art Print */}
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-              <div className="mb-4 h-7" />
-              <h4 className="mb-2 text-lg font-bold text-white">Fine Art Print</h4>
-              <p className="mb-4 text-sm text-white/50">Printed on museum-quality archival paper with fade-resistant inks.</p>
-              <div className="mb-4">
-                <span className="text-3xl font-bold text-white">TBD</span>
-              </div>
-              <ul className="mb-6 space-y-2 text-sm text-white/70">
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Museum-quality archival paper
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Fade-resistant inks
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Free shipping · 7-9 days
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  + Includes digital download
-                </li>
-              </ul>
-              <button
-                onClick={() => handleCheckout('print')}
-                disabled={checkoutLoading !== null}
-                className="w-full rounded-full bg-white py-3 font-semibold text-black transition-colors hover:bg-white/90 disabled:cursor-wait disabled:opacity-70"
-              >
-                {checkoutLoading === 'print' ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Processing...
-                  </span>
-                ) : (
-                  'Order Print'
-                )}
-              </button>
-            </div>
-            {/* Framed Canvas */}
-            <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-              <div className="mb-4 flex items-start justify-between">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-400">
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                  </svg>
-                  The Perfect Gift!
-                </div>
-              </div>
-              <h4 className="mb-2 text-lg font-bold text-white">Large Canvas</h4>
-              <p className="mb-4 text-sm text-white/50">Gallery-quality canvas on wood — arrives ready to hang.</p>
-              <div className="mb-4">
-                <span className="text-3xl font-bold text-white">TBD</span>
-              </div>
-              <ul className="mb-6 space-y-2 text-sm text-white/70">
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Ready to hang
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Cotton-blend canvas, 1.25&quot; thick
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Free shipping · 7-9 days
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  + Includes digital download
-                </li>
-              </ul>
-              <button
-                onClick={() => handleCheckout('framed')}
-                disabled={checkoutLoading !== null}
-                className="w-full rounded-full bg-white py-3 font-semibold text-black transition-colors hover:bg-white/90 disabled:cursor-wait disabled:opacity-70"
-              >
-                {checkoutLoading === 'framed' ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Processing...
-                  </span>
-                ) : (
-                  'Order Canvas'
-                )}
-              </button>
-            </div>
+          <div className="mx-auto max-w-md text-center">
+            <button
+              onClick={() => handleCheckout(getFrameSize(frameSize).option)}
+              disabled={checkoutLoading !== null}
+              className="mt-2 w-full rounded-full bg-amber-400 py-4 text-lg font-semibold text-black transition-colors hover:bg-amber-300 disabled:cursor-wait disabled:opacity-70"
+            >
+              {checkoutLoading && checkoutLoading !== 'download'
+                ? 'Taking you to checkout…'
+                : `Checkout · ${framePrices[frameSize] ?? getFrameSize(frameSize).label}`}
+            </button>
+            <button
+              onClick={() => handleCheckout('download')}
+              disabled={checkoutLoading !== null}
+              className="mt-3 w-full rounded-full border border-white/15 py-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 disabled:opacity-70"
+            >
+              {checkoutLoading === 'download' ? 'Processing…' : 'Digital download only'}
+            </button>
           </div>
         </motion.div>
       )}

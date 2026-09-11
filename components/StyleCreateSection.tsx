@@ -14,7 +14,7 @@ interface StyleCreateSectionProps {
 
 export function StyleCreateSection({ categoryId, styleId, styleTitle }: StyleCreateSectionProps) {
   const [portraitOptions, setPortraitOptions] = useState<PortraitOptions>(() => ({
-    petPose: 'standing',
+    petPose: 'laying',
     clothingChoices: getDefaultClothingChoices(categoryId),
     colourOptionId: 'style-default',
   }))

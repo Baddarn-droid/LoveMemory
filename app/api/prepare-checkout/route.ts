@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import type { CategoryId } from '@/lib/styles'
+import { getFrameSize, isFrameColour, isFrameSize } from '@/lib/frameCatalog'
 import { ORDER_TMP_DIR, orderPaths, writeOrderManifest, type OrderManifest } from '@/lib/orderStorage'
 import { randomUUID } from 'crypto'
 
@@ -26,6 +27,8 @@ export async function POST(request: NextRequest) {
       subStyleId,
       petPose,
       option,
+      frameColor,
+      frameSize,
     } = body
 
     if (!imageB64 || typeof imageB64 !== 'string') {
@@ -43,7 +46,9 @@ export async function POST(request: NextRequest) {
     if (!style || typeof style !== 'string') {
       return NextResponse.json({ error: 'Style is required.' }, { status: 400 })
     }
-    if (!option || !OPTIONS.includes(option as Option)) {
+    const size = isFrameSize(frameSize) ? getFrameSize(frameSize) : null
+    const resolvedOption = (size?.option ?? option) as Option
+    if (!resolvedOption || !OPTIONS.includes(resolvedOption)) {
       return NextResponse.json({ error: 'Invalid option. Use download, print, or framed.' }, { status: 400 })
     }
 
@@ -63,7 +68,9 @@ export async function POST(request: NextRequest) {
       style,
       subStyleId: typeof subStyleId === 'string' ? subStyleId : undefined,
       petPose: petPose === 'standing' || petPose === 'laying' ? petPose : undefined,
-      option,
+      option: resolvedOption,
+      frameColor: resolvedOption === 'framed' && isFrameColour(frameColor) ? frameColor : undefined,
+      frameSize: size?.id,
       fulfilled: false,
       createdAt: new Date().toISOString(),
     }

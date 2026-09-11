@@ -42,4 +42,4 @@ if (errors) {
   process.exit(1)
 }
 console.log('\nAll routes use StyleCreateSection → PortraitCustomizer → CreateFlow')
-console.log('Generation: clean OpenAI edit — symmetric letterbox, input_fidelity=low, all styles')
+console.log('Generation: clean OpenAI edit — symmetric letterbox, input_fidelity=high, quality=high, all styles')

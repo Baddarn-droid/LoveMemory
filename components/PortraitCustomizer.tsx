@@ -62,10 +62,10 @@ export function PortraitCustomizer({ categoryId, styleTitle, options, onChange }
       className="mb-10 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 md:p-8"
     >
       <div className="mb-8 text-center">
-        <h2 className="text-sm font-medium uppercase tracking-widest text-white/50">Customize your portrait</h2>
-        <p className="mt-2 text-xs text-white/40">{styleTitle} · adjust options before you upload</p>
+        <h2 className="text-sm font-medium uppercase tracking-widest text-white/50">Make it theirs</h2>
+        <p className="mt-2 text-xs text-white/40">{styleTitle} · optional extras before you upload</p>
         <p className="mt-1 text-xs text-white/35">
-          Fast light edit for {isPets ? 'pets' : 'people'} — faces stay close to your photo
+          {isPets ? 'Your pet stays recognisable — we change costume and scene.' : 'You stay you — slightly polished, dressed for the era.'}
         </p>
       </div>
 
@@ -73,11 +73,11 @@ export function PortraitCustomizer({ categoryId, styleTitle, options, onChange }
         <div className="mb-8">
           <h3 className="mb-3 text-xs font-medium uppercase tracking-widest text-white/45">Pet pose</h3>
           <div className="flex flex-wrap gap-2">
-            <OptionButton selected={options.petPose === 'standing'} onClick={() => setPetPose('standing')}>
-              Standing
-            </OptionButton>
             <OptionButton selected={options.petPose === 'laying'} onClick={() => setPetPose('laying')}>
-              Laying on a pillow
+              Lying on a cushion
+            </OptionButton>
+            <OptionButton selected={options.petPose === 'standing'} onClick={() => setPetPose('standing')}>
+              Standing on all fours
             </OptionButton>
           </div>
         </div>

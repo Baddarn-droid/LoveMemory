@@ -6,10 +6,10 @@ import { generatePortraitImage } from '@/lib/portraitGeneration'
 const VALID_CATEGORY_IDS: CategoryId[] = ['pets', 'family']
 
 export async function POST(request: NextRequest) {
-  const rawKey = process.env.OPENAI_API_KEY
+  const rawKey = process.env.XAI_API_KEY
   const apiKey = typeof rawKey === 'string' ? rawKey.trim() : ''
   if (!apiKey) {
-    return NextResponse.json({ error: 'OpenAI API key is not configured.' }, { status: 500 })
+    return NextResponse.json({ error: 'xAI API key is not configured.' }, { status: 500 })
   }
 
   let formData: FormData
@@ -49,7 +49,9 @@ export async function POST(request: NextRequest) {
     const petPose =
       typeof petPoseRaw === 'string' && (petPoseRaw === 'standing' || petPoseRaw === 'laying')
         ? petPoseRaw
-        : undefined
+        : categoryId === 'pets'
+          ? 'laying'
+          : undefined
     let clothingChoices: Record<string, string> = {}
     try {
       if (typeof clothingRaw === 'string') clothingChoices = JSON.parse(clothingRaw)
@@ -86,9 +88,12 @@ export async function POST(request: NextRequest) {
   } catch (err: unknown) {
     const rawMessage = err instanceof Error ? err.message : 'Image generation failed.'
     const isAuthError =
-      rawMessage.includes('API key') || rawMessage.includes('401') || rawMessage.includes('Incorrect API key')
+      rawMessage.includes('API key') ||
+      rawMessage.includes('401') ||
+      rawMessage.includes('Incorrect API key') ||
+      rawMessage.includes('xAI 401')
     const message = isAuthError
-      ? "Invalid or missing OpenAI API key. Check .env.local (exact name: OPENAI_API_KEY), restart the dev server, and run the diagnostic: open http://localhost:3000/api/test-openai in your browser. If you're on a deployed site (e.g. Vercel), set OPENAI_API_KEY in the host's environment variables."
+      ? 'Invalid or missing xAI API key. Add XAI_API_KEY to .env.local, restart the dev server, and open /api/test-xai. On a deployed site, set XAI_API_KEY in the host environment variables.'
       : rawMessage
     console.error('generate-portrait error:', err)
     return NextResponse.json({ error: message }, { status: isAuthError ? 401 : 500 })

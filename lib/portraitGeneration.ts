@@ -1,4 +1,3 @@
-import OpenAI, { toFile } from 'openai'
 import sharp from 'sharp'
 import type { CategoryId } from './styles'
 
@@ -6,12 +5,12 @@ export const UNFILTERED_PIPELINE_APPLIES_TO: readonly CategoryId[] = ['pets', 'f
 
 export type PortraitTier = 'preview' | 'standard'
 
-/** Clean single-pass edit — no face mask or overlay (those caused the oval bubble). */
+const XAI_IMAGES_EDITS_URL = 'https://api.x.ai/v1/images/edits'
+const XAI_IMAGE_MODEL = 'grok-imagine-image-2.0'
+
 export const PORTRAIT_PREVIEW_CONFIG = {
-  quality: 'low' as const,
-  inputFidelity: 'low' as const,
   canvasSize: 1024,
-  outputSize: '1024x1024' as const,
+  aspectRatio: '1:1' as const,
 }
 
 export const PORTRAIT_STANDARD_CONFIG = PORTRAIT_PREVIEW_CONFIG
@@ -48,8 +47,30 @@ export async function prepareSourceImage(
     .toBuffer()
 }
 
-type ImageEditWithFidelity = OpenAI.Images.ImageEditParams & {
-  input_fidelity?: 'high' | 'low'
+type XaiImagePayload = {
+  data?: Array<{ b64_json?: string; url?: string }>
+  b64_json?: string
+  url?: string
+  error?: { message?: string } | string
+}
+
+function redactSecrets(text: string): string {
+  return text.replace(/xai-[A-Za-z0-9]+/g, 'xai-***').replace(/sk-[^\s]+/g, 'sk-***')
+}
+
+async function b64FromXaiPayload(payload: XaiImagePayload): Promise<string> {
+  const first = payload.data?.[0]
+  const b64 = first?.b64_json || payload.b64_json
+  if (b64) return b64
+
+  const url = first?.url || payload.url
+  if (url) {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('Failed to fetch generated image from xAI.')
+    return Buffer.from(await res.arrayBuffer()).toString('base64')
+  }
+
+  throw new Error('Unexpected response from xAI image API.')
 }
 
 export async function generatePortraitImage(options: {
@@ -63,30 +84,40 @@ export async function generatePortraitImage(options: {
   const config = TIER_CONFIG[tier]
 
   const prepared = await prepareSourceImage(sourceBuffer, config.canvasSize)
-  const imageFile = await toFile(prepared, 'image.png', { type: 'image/png' })
+  const dataUri = `data:image/png;base64,${prepared.toString('base64')}`
 
-  const openai = new OpenAI({ apiKey })
-  const result = await openai.images.edit({
-    model: 'gpt-image-1.5',
-    image: [imageFile],
-    prompt,
-    size: config.outputSize,
-    quality: config.quality,
-    input_fidelity: config.inputFidelity,
-  } as ImageEditWithFidelity)
+  const res = await fetch(XAI_IMAGES_EDITS_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: XAI_IMAGE_MODEL,
+      prompt,
+      image: { url: dataUri, type: 'image_url' },
+      aspect_ratio: config.aspectRatio,
+      response_format: 'b64_json',
+    }),
+  })
 
-  const first = result.data?.[0]
-  if (!first) throw new Error('No image was generated.')
-
-  if ('b64_json' in first && first.b64_json) {
-    return first.b64_json
+  const text = await res.text()
+  let payload: XaiImagePayload
+  try {
+    payload = JSON.parse(text) as XaiImagePayload
+  } catch {
+    throw new Error(
+      redactSecrets(!res.ok ? `xAI ${res.status}: ${text.slice(0, 240)}` : 'xAI response was not JSON')
+    )
   }
 
-  if ('url' in first && first.url) {
-    const res = await fetch(first.url)
-    if (!res.ok) throw new Error('Failed to fetch generated image.')
-    return Buffer.from(await res.arrayBuffer()).toString('base64')
+  if (!res.ok) {
+    const errMsg =
+      typeof payload.error === 'string'
+        ? payload.error
+        : payload.error?.message || text.slice(0, 240)
+    throw new Error(redactSecrets(`xAI ${res.status}: ${errMsg}`))
   }
 
-  throw new Error('Unexpected response from OpenAI.')
+  return b64FromXaiPayload(payload)
 }

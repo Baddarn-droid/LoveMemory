@@ -50,7 +50,7 @@ export function StyleSearch({ categorySlug }: StyleSearchProps) {
   return (
     <div ref={containerRef} className="relative mb-8">
       <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-white/40">
-        Search Styles
+        Search looks
       </h2>
       <div className="relative">
         <input
@@ -62,7 +62,7 @@ export function StyleSearch({ categorySlug }: StyleSearchProps) {
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Type to search... e.g. football, vintage, comic, renaissance"
+          placeholder="Search looks… e.g. victorian, storybook, renaissance"
           className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-5 py-3.5 pr-12 text-white placeholder-white/30 outline-none transition-colors focus:border-white/20 focus:bg-white/[0.05]"
         />
         <svg

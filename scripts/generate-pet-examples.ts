@@ -1,7 +1,8 @@
 /**
  * Generate AI pet example images for each style.
- * Run with: npx tsx scripts/generate-pet-examples.ts
- * Requires: npm run dev running on http://localhost:3000
+ * Run with: npm run generate-pet-examples -- --force
+ * Requires XAI_API_KEY in frontend/.env.local
+ * Every pet is generated lying down, as a real quadruped (no human arms).
  *
  * 1. Uses 3 seed images from public/seed/pets/: pet1, pet2, pet3 (jpg or png).
  *    Recommended: cat (1), horse (2), dachshund (3) — centered, not too zoomed.
@@ -14,13 +15,35 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { ALL_STYLE_IDS } from '../lib/styles'
+import { buildPortraitPrompt } from '../lib/buildPortraitPrompt'
+import { generatePortraitImage } from '../lib/portraitGeneration'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.join(__dirname, '..')
 const SEED_DIR = path.join(ROOT, 'public', 'seed', 'pets')
 const EXAMPLES_DIR = path.join(ROOT, 'public', 'examples')
-const PORT = process.env.PORT || 3000
-const API_URL = `http://localhost:${PORT}/api/generate-portrait`
+
+function loadEnvLocal() {
+  const envPath = path.join(ROOT, '.env.local')
+  if (!fs.existsSync(envPath)) return
+  for (const raw of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+    const line = raw.trim()
+    if (!line || line.startsWith('#')) continue
+    const eq = line.indexOf('=')
+    if (eq < 1) continue
+    const key = line.slice(0, eq).trim()
+    let value = line.slice(eq + 1).trim()
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1)
+    }
+    if (!process.env[key]) process.env[key] = value
+  }
+}
+
+loadEnvLocal()
 
 /** Unsplash fallback URLs if seed images are missing (dog, cat, dog) */
 const SEED_URLS = [
@@ -67,39 +90,25 @@ async function ensureSeedImages(): Promise<string[]> {
   return paths
 }
 
-async function generateOne(
-  imagePath: string,
-  styleId: string,
-  index: number
-): Promise<Buffer> {
-  const formData = new FormData()
-  const ext = path.extname(imagePath).toLowerCase()
-  const mime = ext === '.png' ? 'image/png' : ext === '.avif' ? 'image/avif' : 'image/jpeg'
-  const blob = new Blob([fs.readFileSync(imagePath)], { type: mime })
-  formData.append('image', blob, path.basename(imagePath))
-  formData.append('category', 'pets')
-  formData.append('style', styleId)
-  formData.append('petPose', 'standing')
-
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    body: formData,
+async function generateOne(imagePath: string, styleId: string, species: 'cat' | 'horse' | 'dog'): Promise<Buffer> {
+  const apiKey = process.env.XAI_API_KEY?.trim()
+  if (!apiKey) {
+    throw new Error('XAI_API_KEY is not set in .env.local')
+  }
+  const prompt = buildPortraitPrompt({
+    categoryId: 'pets',
+    styleId,
+    petPose: 'laying',
+    petSpecies: species,
   })
-
-  const text = await res.text()
-  let data: { b64?: string; url?: string; error?: string }
-  try {
-    data = JSON.parse(text) as { b64?: string; url?: string; error?: string }
-  } catch {
-    throw new Error(!res.ok ? `API ${res.status}: ${text.slice(0, 200)}` : 'Response was not JSON')
-  }
-  if (!res.ok) throw new Error(data.error || `API ${res.status}`)
-  if (data.b64) return Buffer.from(data.b64, 'base64')
-  if (data.url) {
-    const imgRes = await fetch(data.url)
-    return Buffer.from(await imgRes.arrayBuffer())
-  }
-  throw new Error('No image in response')
+  const b64 = await generatePortraitImage({
+    apiKey,
+    sourceBuffer: fs.readFileSync(imagePath),
+    prompt,
+    category: 'pets',
+    tier: 'preview',
+  })
+  return Buffer.from(b64, 'base64')
 }
 
 async function main() {
@@ -108,9 +117,19 @@ async function main() {
   // limit = number of styles to process (e.g. 5 for quick test)
   const args = process.argv.slice(2)
   const force = args.includes('--force')
-  const limitArg = args.find((a) => a !== '--force')
+  const stylesArg = args.find((a) => a.startsWith('--styles='))?.slice('--styles='.length)
+  const slotsArg = args.find((a) => a.startsWith('--slots='))?.slice('--slots='.length)
+  const limitArg = args.find((a) => !a.startsWith('--') && a !== '--force')
   const limit = limitArg ? parseInt(limitArg, 10) : undefined
-  const styleIds = limit ? ALL_STYLE_IDS.slice(0, limit) : ALL_STYLE_IDS
+  const styleIds = stylesArg
+    ? stylesArg.split(',').map((s) => s.trim()).filter(Boolean)
+    : limit
+      ? ALL_STYLE_IDS.slice(0, limit)
+      : ALL_STYLE_IDS
+  const slots = slotsArg
+    ? slotsArg.split(',').map((s) => parseInt(s.trim(), 10)).filter((n) => n >= 1 && n <= 3)
+    : [1, 2, 3]
+  const speciesForSlot: Array<'cat' | 'horse' | 'dog'> = ['cat', 'horse', 'dog']
 
   console.log('Generating pet examples for', styleIds.length, 'styles')
   if (force) console.log('(--force: regenerating existing files)')
@@ -123,22 +142,23 @@ async function main() {
   fs.mkdirSync(EXAMPLES_DIR, { recursive: true })
 
   let done = 0
-  const total = styleIds.length * 3
+  const total = styleIds.length * slots.length
 
   for (const styleId of styleIds) {
-    for (let i = 0; i < 3; i++) {
-      const outPath = path.join(EXAMPLES_DIR, `pets-${styleId}-${i + 1}.png`)
+    for (const slot of slots) {
+      const i = slot - 1
+      const outPath = path.join(EXAMPLES_DIR, `pets-${styleId}-${slot}.png`)
       if (!force && fs.existsSync(outPath)) {
-        console.log(`Skip (exists): pets-${styleId}-${i + 1}.png`)
+        console.log(`Skip (exists): pets-${styleId}-${slot}.png`)
         done++
         continue
       }
       try {
-        console.log(`Generating: pets-${styleId}-${i + 1}.png`)
-        const buf = await generateOne(seedPaths[i], styleId, i + 1)
+        console.log(`Generating: pets-${styleId}-${slot}.png (${speciesForSlot[i]})`)
+        const buf = await generateOne(seedPaths[i], styleId, speciesForSlot[i])
         fs.writeFileSync(outPath, buf)
         done++
-        console.log(`  Done (${done}/${total})`)
+        console.log(`  Done (${done}/${styleIds.length * slots.length})`)
       } catch (err) {
         console.error(`  Error:`, err)
       }

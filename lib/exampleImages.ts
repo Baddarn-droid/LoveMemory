@@ -1,21 +1,24 @@
 /**
  * Example images for each category and style.
- * Pet examples are AI-generated per style and stored in /examples/.
- * Other categories use Unsplash or local files until AI examples are added.
+ * Pets: 1 = cat, 2 = horse, 3 = dachshund
+ * People: 1 / 2 / 3 = different family & group portraits
  */
 
-const U = (id: string) => `https://images.unsplash.com/photo-${id}?w=600&q=80`
+/** Bump when example PNGs are replaced so Next/browser do not keep old thumbs. */
+const EXAMPLE_ASSET_VERSION = 'lying-all-1'
 
-/** AI-generated pet examples: /examples/pets-{styleId}-1.png, etc. */
+function withVersion(path: string): string {
+  return `${path}?v=${EXAMPLE_ASSET_VERSION}`
+}
+
 function getPetExamplePaths(styleId: string): string[] {
   return [
-    `/examples/pets-${styleId}-1.png`,
-    `/examples/pets-${styleId}-2.png`,
-    `/examples/pets-${styleId}-3.png`,
+    withVersion(`/examples/pets-${styleId}-1.png`),
+    withVersion(`/examples/pets-${styleId}-2.png`),
+    withVersion(`/examples/pets-${styleId}-3.png`),
   ]
 }
 
-/** AI-generated family examples: /examples/family-{styleId}-1.png, etc. */
 function getFamilyExamplePaths(styleId: string): string[] {
   return [
     `/examples/family-${styleId}-1.png`,
@@ -24,22 +27,8 @@ function getFamilyExamplePaths(styleId: string): string[] {
   ]
 }
 
-/** Per-category example images (3 per category) - used when no per-style images exist */
-const BY_CATEGORY: Record<string, string[]> = {
-  // pets: AI-generated per style - see getExampleImages
-  'family-couple': [], // family uses getFamilyExamplePaths per style
-}
-
-/** Per-style overrides: key = "category-styleId", value = [url1, url2, url3] */
-const BY_STYLE: Record<string, string[]> = {
-  // Add per-style overrides here when you have style-specific images
-  // e.g. 'pets-renaissance': [url1, url2, url3],
-}
-
 /**
- * Get 3 example image URLs for a category and style.
- * Pets: AI-generated per style at /examples/pets-{styleId}-1|2|3.png
- * Others: BY_STYLE override or BY_CATEGORY fallback.
+ * Get 3 example image URLs for a category and style (different subjects).
  */
 export function getExampleImages(categorySlug: string, styleId: string): string[] {
   if (categorySlug === 'pets') {
@@ -48,6 +37,21 @@ export function getExampleImages(categorySlug: string, styleId: string): string[
   if (categorySlug === 'family' || categorySlug === 'family-couple') {
     return getFamilyExamplePaths(styleId)
   }
-  const styleKey = `${categorySlug}-${styleId}`
-  return BY_STYLE[styleKey] ?? BY_CATEGORY[categorySlug] ?? []
+  return []
 }
+
+/** Rotate cat / horse / dachshund (pets) or different family groups (people) across a list. */
+export function getCatalogThumb(categorySlug: string, styleId: string, mixIndex: number): string | undefined {
+  const images = getExampleImages(categorySlug, styleId)
+  if (!images.length) return undefined
+  return images[mixIndex % images.length]
+}
+
+const PET_EXAMPLE_LABELS = ['Cat', 'Horse', 'Dachshund']
+const PEOPLE_EXAMPLE_LABELS = ['Large family', 'Family of four', 'Parents & children']
+
+export function getExampleSubjectLabel(categorySlug: string, exampleIndex: number): string {
+  const labels = categorySlug === 'pets' ? PET_EXAMPLE_LABELS : PEOPLE_EXAMPLE_LABELS
+  return labels[exampleIndex] ?? `Example ${exampleIndex + 1}`
+}
+

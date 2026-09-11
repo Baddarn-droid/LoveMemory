@@ -19,7 +19,7 @@ A professional, art-gallery-style site for custom portraits (pets, families, kid
 2. **Environment**  
    Create `frontend/.env.local` (never commit it).  
    - **With backend (recommended):** set only `NEXT_PUBLIC_BACKEND_URL=http://localhost:3001` (or your backend URL). No API keys in the frontend.  
-   - **Without backend:** set your host’s env vars for `OPENAI_API_KEY` and Stripe keys; the app uses same-origin API routes.
+   - **Without backend:** set your host’s env vars for `XAI_API_KEY` and Stripe keys; the app uses same-origin API routes.
 
 3. **Run in development**
    ```bash

@@ -12,8 +12,11 @@ export type OrderManifest = {
   subStyleId?: string
   petPose?: 'standing' | 'laying'
   option: 'download' | 'print' | 'framed'
+  frameColor?: string
+  frameSize?: string
   fulfilled: boolean
   createdAt: string
+  prodigiOrderId?: string
 }
 
 export function orderPaths(orderId: string) {

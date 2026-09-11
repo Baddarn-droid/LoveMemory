@@ -10,15 +10,22 @@ import {
   STYLE_THEME_DEFINITIONS,
   getAllStyleIdsForCategory,
   getStylePrompt,
-  RENAISSANCE_SUB_STYLES,
 } from '../lib/styles'
 
-const REQUIRED_MARKERS = [
+const REQUIRED_MARKERS_PEOPLE = [
   'PHOTOREALISTIC PHOTOGRAPH',
   'ZERO filters',
   'THEME ONLY',
   'theme on clothing and background',
   'STYLE LOCK',
+] as const
+
+const REQUIRED_MARKERS_PETS = [
+  'HARD RULES',
+  'Zero human arms',
+  'PET STYLE SCENE',
+  'LYING DOWN',
+  'four animal legs',
 ] as const
 
 let errors = 0
@@ -45,16 +52,12 @@ for (const category of CATEGORIES) {
       errors++
     }
 
-    const subStyles =
-      styleId === 'renaissance' ? RENAISSANCE_SUB_STYLES.map((s) => s.id) : [undefined]
-
-    for (const subStyleId of subStyles) {
-      const label = subStyleId ? `${styleId}/${subStyleId}` : styleId
-      const stylePrompt = getStylePrompt(category.id, styleId, subStyleId)
+    {
+      const label = styleId
+      const stylePrompt = getStylePrompt(category.id, styleId)
       const fullPrompt = buildPortraitPrompt({
         categoryId: category.id,
         styleId,
-        subStyleId,
         colourOptionId: 'crimson-gold',
         clothingChoices: undefined,
       })
@@ -69,7 +72,7 @@ for (const category of CATEGORIES) {
         itemOk = false
       }
 
-      for (const marker of REQUIRED_MARKERS) {
+      for (const marker of category.id === 'pets' ? REQUIRED_MARKERS_PETS : REQUIRED_MARKERS_PEOPLE) {
         if (!fullPrompt.toLowerCase().includes(marker.toLowerCase())) {
           console.error(`  ✗ ${label} — buildPortraitPrompt missing "${marker}"`)
           errors++
