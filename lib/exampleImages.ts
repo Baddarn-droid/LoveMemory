@@ -1,11 +1,11 @@
 /**
  * Example images for each category and style.
  * Pets: 1 = cat, 2 = horse, 3 = dachshund
- * People: 1 / 2 / 3 = different family & group portraits
+ * People: 1 = family of four, 2 = parents & children, 3 = individual man, 4 = individual woman
  */
 
 /** Bump when example PNGs are replaced so Next/browser do not keep old thumbs. */
-const EXAMPLE_ASSET_VERSION = 'lying-all-1'
+const EXAMPLE_ASSET_VERSION = 'people-4'
 
 function withVersion(path: string): string {
   return `${path}?v=${EXAMPLE_ASSET_VERSION}`
@@ -21,14 +21,15 @@ function getPetExamplePaths(styleId: string): string[] {
 
 function getFamilyExamplePaths(styleId: string): string[] {
   return [
-    `/examples/family-${styleId}-1.png`,
-    `/examples/family-${styleId}-2.png`,
-    `/examples/family-${styleId}-3.png`,
+    withVersion(`/examples/family-${styleId}-1.png`),
+    withVersion(`/examples/family-${styleId}-2.png`),
+    withVersion(`/examples/family-${styleId}-3.png`),
+    withVersion(`/examples/family-${styleId}-4.png`),
   ]
 }
 
 /**
- * Get 3 example image URLs for a category and style (different subjects).
+ * Get example image URLs for a category and style (different subjects).
  */
 export function getExampleImages(categorySlug: string, styleId: string): string[] {
   if (categorySlug === 'pets') {
@@ -48,7 +49,7 @@ export function getCatalogThumb(categorySlug: string, styleId: string, mixIndex:
 }
 
 const PET_EXAMPLE_LABELS = ['Cat', 'Horse', 'Dachshund']
-const PEOPLE_EXAMPLE_LABELS = ['Large family', 'Family of four', 'Parents & children']
+const PEOPLE_EXAMPLE_LABELS = ['Family of four', 'Parents & children', 'Portrait', 'Portrait']
 
 export function getExampleSubjectLabel(categorySlug: string, exampleIndex: number): string {
   const labels = categorySlug === 'pets' ? PET_EXAMPLE_LABELS : PEOPLE_EXAMPLE_LABELS

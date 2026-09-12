@@ -68,9 +68,8 @@ export default async function StylePage({ params }: { params: Promise<{ category
             {category.id === 'pets' ? 'Same look, different animals' : 'Same look, different people'}
           </h2>
           <GalleryWall className="rounded-2xl px-4 py-8 sm:px-8 sm:py-10">
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-8">
-              {[0, 1, 2].map((i) => {
-                const src = examples[i]
+            <div className={`grid grid-cols-2 gap-4 sm:gap-8 ${category.id === 'pets' ? 'sm:grid-cols-3' : 'sm:grid-cols-4'}`}>
+              {examples.map((src, i) => {
                 const subject = getExampleSubjectLabel(category.slug, i)
                 return (
                   <div key={i}>

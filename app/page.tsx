@@ -21,7 +21,7 @@ const GIFT_PATHS = [
     title: 'People portraits',
     body: 'Still clearly you — just a better-lit, gift-ready version in period clothes. Fun to try, easy to send as a print or a download.',
     cta: 'Try a people portrait',
-    image: '/examples/family-baroque-royal-2.png',
+    image: '/examples/family-baroque-royal-2.png?v=people-4',
   },
 ]
 
@@ -33,11 +33,11 @@ const STEPS = [
 
 const SAMPLES = [
   { src: '/examples/pets-renaissance-1.png?v=lying-all-1', href: '/pets/renaissance', label: 'Cat · Renaissance' },
-  { src: '/examples/family-baroque-royal-2.png', href: '/family-couple/baroque-royal', label: 'Family · Baroque Royal' },
+  { src: '/examples/family-baroque-royal-2.png?v=people-4', href: '/family-couple/baroque-royal', label: 'Family · Baroque Royal' },
   { src: '/examples/pets-classic-storybook-3.png?v=lying-all-1', href: '/pets/classic-storybook', label: 'Dachshund · Storybook' },
-  { src: '/examples/family-victorian-era-1.png', href: '/family-couple/victorian-era', label: 'Family · Victorian' },
+  { src: '/examples/family-victorian-era-1.png?v=people-4', href: '/family-couple/victorian-era', label: 'Family · Victorian' },
   { src: '/examples/pets-high-fantasy-kingdom-2.png?v=lying-all-1', href: '/pets/high-fantasy-kingdom', label: 'Horse · Fantasy' },
-  { src: '/examples/family-dark-academia-scholar-3.png', href: '/family-couple/dark-academia-scholar', label: 'People · Dark Academia' },
+  { src: '/examples/family-dark-academia-scholar-3.png?v=people-4', href: '/family-couple/dark-academia-scholar', label: 'People · Dark Academia' },
 ]
 
 export default function Home() {
