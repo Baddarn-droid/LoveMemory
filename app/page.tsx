@@ -108,7 +108,6 @@ export default function Home() {
                   alt={item.label}
                   colour={frameColourForIndex(i)}
                   sizes="(max-width: 640px) 50vw, 30vw"
-                  fit={item.src.includes('/family-') ? 'contain' : 'cover'}
                 />
                 <p className="mt-3 text-center text-xs tracking-wide text-white/50 transition group-hover:text-amber-200">
                   {item.label}
@@ -136,7 +135,6 @@ export default function Home() {
                       alt=""
                       colour={frameColourForIndex(i)}
                       sizes="(max-width: 768px) 80vw, 280px"
-                      fit={path.image.includes('/family-') ? 'contain' : 'cover'}
                     />
                   </div>
                 </GalleryWall>

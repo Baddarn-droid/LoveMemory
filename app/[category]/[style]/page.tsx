@@ -79,7 +79,6 @@ export default async function StylePage({ params }: { params: Promise<{ category
                         alt={`${style.title} ${subject}`}
                         colour={frameColourForIndex(i)}
                         sizes="33vw"
-                        fit={category.id === 'pets' ? 'cover' : 'contain'}
                       />
                     ) : (
                       <div className="flex aspect-[5/7] items-center justify-center text-xs text-white/25">{subject}</div>

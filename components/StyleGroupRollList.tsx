@@ -37,12 +37,7 @@ export function StyleGroupRollList({ categorySlug, groups }: StyleGroupRollListP
                   >
                     <div className="w-[5.5rem] shrink-0 sm:w-28">
                       {thumb ? (
-                        <StyleThumb
-                          src={thumb}
-                          alt=""
-                          colour={frameColourForIndex(colourIndex)}
-                          fit={categorySlug === 'pets' ? 'cover' : 'contain'}
-                        />
+                        <StyleThumb src={thumb} alt="" colour={frameColourForIndex(colourIndex)} />
                       ) : (
                         <div className="h-full w-full bg-white/[0.04]" />
                       )}
