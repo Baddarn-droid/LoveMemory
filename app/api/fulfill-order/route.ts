@@ -19,7 +19,11 @@ const UUID_RE = /^[a-f0-9-]{36}$/i
 
 function shippingFromSession(session: Stripe.Checkout.Session): ProdigiRecipient | null {
   const collected = session.collected_information?.shipping_details
-  const legacy = session.shipping_details
+  const legacy = (
+    session as Stripe.Checkout.Session & {
+      shipping_details?: Stripe.Checkout.Session.CollectedInformation.ShippingDetails | null
+    }
+  ).shipping_details
   const details = collected ?? legacy
   const address = details?.address
   if (!details?.name || !address?.line1 || !address.city || !address.postal_code || !address.country) {

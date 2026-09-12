@@ -72,8 +72,8 @@ export async function POST(request: NextRequest) {
         : origin + '/'
 
       let unitAmount = DOWNLOAD_PRICE_GBP
-      let productName = opt.name
-      let productDescription = opt.description
+      let productName: string = opt.name
+      let productDescription: string = opt.description
 
       if (resolvedOption === 'framed' || resolvedOption === 'print') {
         if (!isProdigiConfigured()) {
