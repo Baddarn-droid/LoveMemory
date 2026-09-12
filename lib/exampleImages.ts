@@ -5,7 +5,7 @@
  */
 
 /** Bump when example PNGs are replaced so Next/browser do not keep old thumbs. */
-const EXAMPLE_ASSET_VERSION = 'people-4'
+const EXAMPLE_ASSET_VERSION = 'people-wide-1'
 
 function withVersion(path: string): string {
   return `${path}?v=${EXAMPLE_ASSET_VERSION}`

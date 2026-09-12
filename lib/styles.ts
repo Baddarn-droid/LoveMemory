@@ -258,7 +258,7 @@ export const FAMILY_EXACT_PEOPLE_COUNT = `CRITICAL — SAME NUMBER OF PEOPLE (DO
 export const FULL_FRAME_INSTRUCTION = `CRITICAL - FRAMING AND COMPOSITION (do not zoom in):
 - Pull the camera BACK. Show the WHOLE subject with clear space around them — never a tight close-up of the face or muzzle.
 - For pets: the entire animal must be in frame — head, ears, neck, body, legs/paws, and tail. Do NOT crop a cat to just the head and ruff. If the upload is already a full pet, keep it full; if it is a close crop, still pull back enough to show the body.
-- For people: show at least head-and-shoulders with generous space; if the upload is full body or a group, keep everyone fully visible.
+- For people: show at least head-and-shoulders with generous space; if the upload is full body or a group, keep everyone fully visible from head to shoes. Never zoom so tightly that a family member is cropped out.
 - Do NOT crop, zoom in, or cut off ears, paws, tail, hats, or limbs at the edges.
 - Leave breathing room above the head and below the feet/paws.`
 

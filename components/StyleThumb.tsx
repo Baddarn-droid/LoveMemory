@@ -9,10 +9,12 @@ export function StyleThumb({
   src,
   alt,
   colour = 'gold',
+  fit = 'cover',
 }: {
   src: string
   alt: string
   colour?: FrameColourId
+  fit?: 'cover' | 'contain'
 }) {
   const [failed, setFailed] = useState(false)
 
@@ -32,7 +34,7 @@ export function StyleThumb({
           alt={alt}
           fill
           unoptimized
-          className="object-cover object-center transition duration-500 group-hover:scale-[1.02]"
+          className={`${fit === 'contain' ? 'object-contain object-center' : 'object-cover object-center'} transition duration-500 group-hover:scale-[1.02]`}
           sizes="(max-width: 640px) 40vw, 180px"
           onError={() => setFailed(true)}
         />

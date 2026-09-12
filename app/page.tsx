@@ -21,7 +21,7 @@ const GIFT_PATHS = [
     title: 'People portraits',
     body: 'Still clearly you — just a better-lit, gift-ready version in period clothes. Fun to try, easy to send as a print or a download.',
     cta: 'Try a people portrait',
-    image: '/examples/family-baroque-royal-2.png?v=people-4',
+    image: '/examples/family-baroque-royal-2.png?v=people-wide-1',
   },
 ]
 
@@ -33,11 +33,11 @@ const STEPS = [
 
 const SAMPLES = [
   { src: '/examples/pets-renaissance-1.png?v=lying-all-1', href: '/pets/renaissance', label: 'Cat · Renaissance' },
-  { src: '/examples/family-baroque-royal-2.png?v=people-4', href: '/family-couple/baroque-royal', label: 'Family · Baroque Royal' },
+  { src: '/examples/family-baroque-royal-2.png?v=people-wide-1', href: '/family-couple/baroque-royal', label: 'Family · Baroque Royal' },
   { src: '/examples/pets-classic-storybook-3.png?v=lying-all-1', href: '/pets/classic-storybook', label: 'Dachshund · Storybook' },
-  { src: '/examples/family-victorian-era-1.png?v=people-4', href: '/family-couple/victorian-era', label: 'Family · Victorian' },
+  { src: '/examples/family-victorian-era-1.png?v=people-wide-1', href: '/family-couple/victorian-era', label: 'Family · Victorian' },
   { src: '/examples/pets-high-fantasy-kingdom-2.png?v=lying-all-1', href: '/pets/high-fantasy-kingdom', label: 'Horse · Fantasy' },
-  { src: '/examples/family-dark-academia-scholar-3.png?v=people-4', href: '/family-couple/dark-academia-scholar', label: 'People · Dark Academia' },
+  { src: '/examples/family-dark-academia-scholar-3.png?v=people-wide-1', href: '/family-couple/dark-academia-scholar', label: 'People · Dark Academia' },
 ]
 
 export default function Home() {
@@ -108,6 +108,7 @@ export default function Home() {
                   alt={item.label}
                   colour={frameColourForIndex(i)}
                   sizes="(max-width: 640px) 50vw, 30vw"
+                  fit={item.src.includes('/family-') ? 'contain' : 'cover'}
                 />
                 <p className="mt-3 text-center text-xs tracking-wide text-white/50 transition group-hover:text-amber-200">
                   {item.label}
@@ -135,6 +136,7 @@ export default function Home() {
                       alt=""
                       colour={frameColourForIndex(i)}
                       sizes="(max-width: 768px) 80vw, 280px"
+                      fit={path.image.includes('/family-') ? 'contain' : 'cover'}
                     />
                   </div>
                 </GalleryWall>
