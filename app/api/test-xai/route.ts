@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
+import { getXaiApiKey } from '@/lib/xaiEnv'
 
 /**
  * Diagnostic: check whether XAI_API_KEY is accepted.
  * Open /api/test-xai in the browser.
  */
 export async function GET() {
-  const apiKey = (process.env.XAI_API_KEY ?? '').trim()
+  const apiKey = getXaiApiKey()
   if (!apiKey) {
     return NextResponse.json(
       {

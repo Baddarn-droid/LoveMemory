@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { CategoryId } from '@/lib/styles'
 import { buildPortraitPrompt } from '@/lib/buildPortraitPrompt'
 import { generatePortraitImage } from '@/lib/portraitGeneration'
+import { getXaiApiKey } from '@/lib/xaiEnv'
 
 const VALID_CATEGORY_IDS: CategoryId[] = ['pets', 'family']
 
 export async function POST(request: NextRequest) {
-  const rawKey = process.env.XAI_API_KEY
-  const apiKey = typeof rawKey === 'string' ? rawKey.trim() : ''
+  const apiKey = getXaiApiKey()
   if (!apiKey) {
     return NextResponse.json({ error: 'xAI API key is not configured.' }, { status: 500 })
   }
@@ -87,13 +87,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ b64 })
   } catch (err: unknown) {
     const rawMessage = err instanceof Error ? err.message : 'Image generation failed.'
-    const isAuthError =
-      rawMessage.includes('API key') ||
-      rawMessage.includes('401') ||
-      rawMessage.includes('Incorrect API key') ||
-      rawMessage.includes('xAI 401')
+    const isAuthError = /401|unauthorized|incorrect api key|invalid api key/i.test(rawMessage)
     const message = isAuthError
-      ? 'Invalid or missing xAI API key. Add XAI_API_KEY to .env.local, restart the dev server, and open /api/test-xai. On a deployed site, set XAI_API_KEY in the host environment variables.'
+      ? 'xAI rejected the API key. The variable is set, but the key is invalid or has no Imagine access. Create a new key at console.x.ai, paste it into Railway Variables as XAI_API_KEY, then Redeploy. Check /api/test-xai on this site.'
       : rawMessage
     console.error('generate-portrait error:', err)
     return NextResponse.json({ error: message }, { status: isAuthError ? 401 : 500 })
